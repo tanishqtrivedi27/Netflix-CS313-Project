@@ -2,3 +2,7 @@
 CS313 Project  
 
 Create .env file similar to .env.sample
+
+```
+pip install -r requirements.txt
+```
