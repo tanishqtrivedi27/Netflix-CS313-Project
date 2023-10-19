@@ -1,4 +1,5 @@
 import psycopg2
+from decouple import config
 
 class Database:
     def __init__(self, dbname, user, password, host, port):
@@ -57,7 +58,13 @@ class MovieQueries:
 # Create other classes and functions for different tables as needed
 
 if __name__ == "__main__":
-    db = Database("your_database_name", "your_username", "your_password", "your_host", "your_port")
+    db_name = config('DB_NAME')
+    db_user = config('DB_USER')
+    db_password = config('DB_PASSWORD')
+    db_host = config('DB_HOST')
+    db_port = config('DB_PORT')
+
+    db = Database(db_name, db_user, db_password, db_host, db_port)
 
     # Example usage of UserQueries
     user_queries = UserQueries(db)
