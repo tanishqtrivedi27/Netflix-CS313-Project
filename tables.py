@@ -12,6 +12,21 @@ class Database:
         )
         self.cur = self.conn.cursor()
 
+    def execute_query(self, query):
+        self.cur.execute(query)
+
+    def fetch_one(self):
+        return self.cur.fetchone()
+
+    def fetch_all(self):
+        return self.cur.fetchall()
+    
+    def commit(self):
+        self.conn.commit()
+    
+    def rollback(self):
+        self.conn.rollback()
+
     def create_table(self, table_name, columns):
         create_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns})"
         self.cur.execute(create_query)
@@ -123,17 +138,6 @@ def create_watchlist_table(db):
     """
     db.create_table("watchlist", columns)
 
-# def create_rating_table(db):
-#     columns = """
-#         user_id INT REFERENCES user(user_id),
-#         profile_id INT REFERENCES profile(profile_id)
-#         movie_id INT REFERENCES movie(movie_id),
-#         rating_type VARCHAR(20),
-#         timestamp TIMESTAMP
-#         PRIMARY KEY (user_id, profile_id, movie_id)
-#     """
-#     db.create_table("interaction", columns)
-
 def create_wishlist_table(db):
     columns = """
         user_id INT REFERENCES user(user_id),
@@ -143,21 +147,6 @@ def create_wishlist_table(db):
     """
     db.create_table("wishlist", columns)
 
-# def create_employee_table(db):
-#     columns = """
-#         employee_id SERIAL PRIMARY KEY,
-#         name VARCHAR(255) NOT NULL,
-#         position VARCHAR(255) NOT NULL
-#     """
-#     db.create_table("employee", columns)
-
-# def create_sales_table(db):
-#     columns = """
-#         sales_id SERIAL PRIMARY KEY,
-#         month DATE,
-#         profit DECIMAL(10, 2)
-#     """
-#     db.create_table("sales", columns)
 
 if __name__ == "__main__":
     db_name = config('DB_NAME')
