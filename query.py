@@ -174,7 +174,7 @@ def signup(email, password):
         print("ACCOUNT CREATED! YOU CAN LOGIN NOW")
     
     db.commit_and_close()    
-    
+
 def login(email, password) -> User | None:
     # Check if the user exists
     db_name = config('DB_NAME')
@@ -213,5 +213,6 @@ if __name__ == "__main__":
         user1.create_profile("tanishq", "1111")
         user1.login_profile("tanishq", "1111")
         user1.add_movie_to_watchlist(11)
-        
+        user1.update_movie_timestamp(11, "1:22:45")
+
         logout(user1)
