@@ -27,14 +27,14 @@ class UserQueries:
     def __init__(self, db):
         self.db = db
 
-    def create_user(self, username, password):
-        query = "INSERT INTO user (username, password) VALUES (%s, %s) RETURNING user_id"
-        data = (username, password)
+    def create_user(self, username, password, email):
+        query = "INSERT INTO user (username, password, email) VALUES (%s, %s, %s) RETURNING user_id"
+        data = (username, password, email)
         self.db.execute_query(query, data)
         return self.db.cur.fetchone()[0]
 
     def get_user_by_username(self, username):
-        query = "SELECT * FROM user WHERE username = %s"
+        query = "SELECT * FROM user WHERE email = %s"
         data = (username,)
         self.db.execute_query(query, data)
         return self.db.fetch_all()
@@ -68,8 +68,8 @@ if __name__ == "__main__":
 
     # Example usage of UserQueries
     user_queries = UserQueries(db)
-    user_id = user_queries.create_user("example_user", "password123")
-    print(f"Created user with ID: {user_id}")
+    # user_id = user_queries.create_user("example_user", "password123")
+    # print(f"Created user with ID: {user_id}")
 
     users = user_queries.get_user_by_username("example_user")
     print("Users with the username 'example_user':", users)
