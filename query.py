@@ -383,36 +383,44 @@ class RedisDB:
 if __name__ == "__main__":
     # Create a account
     signup("tanishq.trivedi27@gmail.com", "123456")
+    signup("ivivekpilla@gmail.com", "12345")
+    
+    # mv = MovieQueries()
     # Log in
     account1 = login("tanishq.trivedi27@gmail.com", "123456")
+    account2 = login("ivivekpilla@gmail.com", "12345")
 
     # Add a movie to the watchlist
-    if (account1 is not None):
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
-        # account1.logout_profile()
-        
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
-        # account1.logout_profile()
-
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
-        # account1.logout_profile()
-
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
-        # account1.logout_profile()
-
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
-        account1.logout_profile()
+    # if ():
+    account1.create_profile("tanishq", "1111")
+    account1.login_profile("tanishq", "1111")
+    # account1.logout_profile()
+    account2.create_profile("pilla", "1111")
+    account2.login_profile("pilla", "1111")
     
-        
-        # account1.create_profile("vivek", "1111")
-        account1.login_profile("arun", "1111")
-        # account1.logout_profile()
-        # account1.add_movie_to_watchlist(11)
-        # account1.update_movie_timestamp(11, "1:22:45")
+    account1.create_profile("tanishq", "1111")
+    account1.login_profile("tanishq", "1111")
+    account1.logout_profile()
+    
+    account1.create_profile("pilla", "1111")
+    account1.login_profile("pilla", "1111")
 
-        logout(account1)
+    account1.logout_profile()
+
+    account1.create_profile("tanishq", "1111")
+    # account1.login_profile("tanishq", "1111")
+    account1.logout_profile()
+    
+
+    account1.create_profile("tanishq", "1111")
+    # account1.login_profile("tanishq", "1111")
+    account1.logout_profile()
+
+    
+    # account1.create_profile("vivek", "1111")
+    account1.login_profile("arun", "1111")
+    # account1.logout_profile()
+    # account1.add_movie_to_watchlist(11)
+    # account1.update_movie_timestamp(11, "1:22:45")
+
+    logout(account1)
