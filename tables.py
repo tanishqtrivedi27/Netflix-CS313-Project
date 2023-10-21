@@ -156,8 +156,23 @@ def revenue(db):
     """
     db.create_table("revenue", columns)
 
-
+def create_database():
+    conn = psycopg2.connect(
+            user=config('DB_USER'),
+            password=config('DB_PASSWORD'),
+            host=config('DB_HOST'),
+            port=config('DB_PORT')
+        )
+    cur = conn.cursor()
+    
+    cur.execute("SELECT 'CREATE DATABASE netflix' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'netflix')")
+    conn.commit()
+    cur.close()
+    conn.close()
+    
 if __name__ == "__main__":
+    create_database()
+    
     db_name = config('DB_NAME')
     db_user = config('DB_USER')
     db_password = config('DB_PASSWORD')

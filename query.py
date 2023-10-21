@@ -3,6 +3,7 @@ from tables import Database
 import re
 import numpy as np
 from datetime import datetime
+import redis
 
 
 class UserQueries:
@@ -62,6 +63,8 @@ class Account:
         self._db_password = config('DB_PASSWORD')
         self._db_host = config('DB_HOST')
         self._db_port = config('DB_PORT')
+        self.redisdb = RedisDB()
+        
         
         self.db = Database(self._db_name, self._db_user, self._db_password, self._db_host, self._db_port)
 
@@ -121,11 +124,21 @@ class Account:
         # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
+        cur_genre = res1[2]
         print(res1)
         time_stamp = "00:00:00"
         query = f'INSERT INTO watchlist values (self.account_id, self.profile_id, movie_id, NULL, {time_stamp});'
         self.db.execute_query(query)
         self.db.commit()
+        
+        query2 = f'SELECT title FROM MOVIE WHERE genre_id={cur_genre} LIMIT 5;'
+        self.db.execute_query(query2)
+        rec_movie = self.db.fetch_all()
+        for i in rec_movie:
+            self.redisdb.add_recommendation(self.account_id, self.profile_id, i)
+            
+        
+        # 
     
     def add_movie_to_wishlist(self, movie_id):
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
@@ -160,7 +173,7 @@ class Account:
     def update_account_password(self, old_password, new_password):
         query1 = f'SELECT * FROM USER WHERE account_id = {self.account_id};'
         self.db.execute_query(query1);
-        old = self.db.fetch_all()[1]
+        old = self.db.fetch_all()[0][1]
         
         if (old_password == old):
             query = f'update USER SET password = {new_password} WHERE account_id = {self.account_id};'
@@ -193,6 +206,16 @@ class Account:
             self.db.commit()
         else:
             print("SUBSCRIPTION TIER IS NOT MATCHING")
+            
+    def get_user_recommendation(self):
+        rec_movies = self.redisdb.get_recommendation(self.account_id,self.profile_id)
+        if(len(rec_movies) == 0):
+            query2 = f'SELECT title FROM MOVIE LIMIT 5;'
+            self.db.execute_query(query2)
+            rec_movie = self.db.fetch_all()
+            return rec_movie
+        else:
+            return rec_movies
                   
     def delete_account_profile(self):    
         query = f'delete FROM profile WHERE USER_id={self.account_id} and profile_id = {self.profile_id};'
@@ -210,6 +233,7 @@ class Account:
                 
     def logout(self):
         self.db.commit_and_close()
+        self.redisdb.close()
 
 def signup(email, password):
     db_name = config('DB_NAME')
@@ -274,6 +298,24 @@ def login(email, password) -> Account or None:
 def logout(account: Account):
     account.logout()
     del account
+    
+class RedisDB:
+    def __init__(self):
+        self._dbhost = config('REDIS_HOST')
+        self._dbport = config('REDIS_PORT')
+        self._dbname = config('REDIS_DB')
+        self.r = redis.Redis(host=self._dbhost, port=self._dbport, db=self._dbname)
+        
+    def add_recommendation(self,user_id,profile_id,movie):
+        name = str(user_id) + "_"+ str(profile_id)
+        self.r.rpush(name,movie)
+        
+    def get_recommendation(self,user_id, profile_id):
+        name = str(user_id) + "_"+ str(profile_id)
+        rec_list = self.r.lrange(name, 0,5)
+        return rec_list
+    
+    
 
 # Example usage:
 if __name__ == "__main__":
@@ -290,3 +332,4 @@ if __name__ == "__main__":
         account1.update_movie_timestamp(11, "1:22:45")
 
         logout(account1)
+fetch_all
