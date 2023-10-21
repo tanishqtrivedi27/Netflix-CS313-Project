@@ -1,41 +1,6 @@
 import psycopg2
 from decouple import config
-
-
-class Database:
-    def __init__(self, dbname, user, password, host, port):
-        self.conn = psycopg2.connect(
-            dbname=dbname,
-            user=user,
-            password=password,
-            host=host,
-            port=port
-        )
-        self.cur = self.conn.cursor()
-
-    def execute_query(self, query):
-        self.cur.execute(query)
-
-    def fetch_one(self):
-        return self.cur.fetchone()
-
-    def fetch_all(self):
-        return self.cur.fetchall()
-    
-    def commit(self):
-        self.conn.commit()
-    
-    def rollback(self):
-        self.conn.rollback()
-
-    def create_table(self, table_name, columns):
-        create_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns});"
-        self.cur.execute(create_query)
-
-    def commit_and_close(self):
-        self.conn.commit()
-        self.cur.close()
-        self.conn.close()
+from database import Database
 
 def create_account_table(db):
     columns = """
@@ -189,10 +154,6 @@ def create_database():
     conn.close()
     
 if __name__ == "__main__":
-    # print("vjsvj")
-    # create_database()
-    # print("hhb")
-    
     db_name = config('DB_NAME')
     db_user = config('DB_USER')
     db_password = config('DB_PASSWORD')

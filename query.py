@@ -1,99 +1,10 @@
 from decouple import config
-from tables import Database
+from database import Database
+from database import RedisDB
 import re
-import numpy as np
 from datetime import datetime
-import redis
 from dateutil.relativedelta import relativedelta
 import random
-
-
-class UserQueries:
-    def __init__(self, db):
-        self.db = db
-
-    def create_account(self, password, email):
-        query = f'INSERT INTO account (password, email) VALUES (\'{password}\', \'{email}\');'
-        self.db.execute_query(query)
-        return self.db.fetch_one()
-
-    def get_account_by_email_password(self, email, password):
-        query = f'SELECT account_id FROM account WHERE email = \'{email}\' AND password = \'{password}\';'
-        self.db.execute_query(query)
-        return self.db.fetch_all()
-    
-    def update_account_password(self, email, old_password, new_password):
-        if(self.get_account_by_email_password(email, old_password)):
-            query = f'update account set password=\'{new_password}\' WHERE email = \'{email}\' AND password = \'{old_password}\';'
-            self.db.execute_query(query)
-            print(" UPDATED SUCCESSFULLY")
-        else:
-            print("WRONG EMAIL OR OLD PASSWORD")
-            
-    
-    def delete_account_by_email_password(self, email, password):
-        query = f'delete FROM account WHERE email = \'{email}\' AND password = \'{password}\';'
-        self.db.execute_query(query)
-        print("DELETED SUCCESSFULLY!")
-        return self.db.fetch_all()
-
-class MovieQueries:
-    def __init__(self, db):
-        self.db = db
-
-    def create_movie(self, title, genre_id, description, release_date, actor_id, director_id, prod_id, price):
-        query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES (\'{title}\', {genre_id}, \'{description}\', \'{release_date}\', {actor_id}, {director_id}) RETURNING movie_id;'
-        self.db.execute_query(query)
-        mid = self.db.fetch_one()[0]
-        
-        # self.db.commit()
-        
-        # TRANSACTION 2
-        query2 = f'INSERT INTO movie_deals (production_house_id,movie_id, price) VALUES ({prod_id},{mid},{price});'
-        self.db.execute_query(query2)
-        
-        query4 = f'SELECT revenue FROM REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
-        self.db.execute_query(query4)
-        res4 = self.db.fetch_one()
-        res4 = 0 if (res4 is None) else res4[0]
-            
-        query5 = f'SELECT revenue FROM NET_REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
-        self.db.execute_query(query5)
-        res5 = self.db.fetch_one()
-        res5 = 0 if (res5 is None) else res5[0]
-        
-        if(res5 == 0):
-            query6 = f'INSERT INTO NET_REVENUE VALUES(\'{datetime.now().strftime("%b")}\',{datetime.now().strftime("%Y")},{res4 -price});'
-            
-        else:
-            query6 = f'UPDATE NET_REVENUE SET revenue = {res5 - price} WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
-        
-        self.db.execute_query(query6)
-        
-        prob = random.random()
-        print("probablity of SOMETHING: ", prob)
-        if (prob > 0.5):
-            print("TRANSACTION FAILED")
-            self.db.rollback()
-        else:
-            print("TRANSACTION SUCCESFUL")
-            self.db.commit()
-            print("MOVIE ADDED!")
-            
-        self.db.commit()
-        return 
-
-    def get_movie_by_movieid(self, movie_id):
-        query = f'SELECT * FROM movie WHERE movie_id = {movie_id};'
-        self.db.execute_query(query)
-        print(self.db.fetch_all())
-    
-    def delete_movie_by_movieid(self, movie_id):
-        query = f'delete FROM movie WHERE movie_id = {movie_id};'
-        self.db.execute_query(query)
-        print("DELETED MOVIE!")
-        
-    
 
 class Account:
     def __init__(self, account_id):
@@ -532,61 +443,9 @@ def logout(account: Account):
     account.logout()
     del account
 
-class RedisDB:
-    def __init__(self):
-        self._dbhost = config('REDIS_HOST')
-        self._dbport = config('REDIS_PORT')
-        self._dbname = config('REDIS_DB')
-        self.r = redis.Redis(host=self._dbhost, port=self._dbport, db=self._dbname)
-        
-    def add_recommendation(self,user_id,profile_id,movie):
-        name = str(user_id) + "_"+ str(profile_id)
-        self.r.sadd(name,movie)
-        
-    def get_recommendation(self,user_id, profile_id):
-        name = str(user_id) + "_"+ str(profile_id)
-        rec_list = self.r.smembers(name)
-        list_rec = [i.decode("utf-8") for i in list(rec_list)]
-        return list_rec[-5:]
-    
-    def get_num_devices(self,user_id):
-        if (self.r.hget('num_devices',user_id) is None):
-            return 0
-        else:
-            return int((self.r.hget('num_devices',user_id).decode("utf-8"))) 
-    
-    def incr_num_devices(self,user_id,incr):
-        if(self.get_num_devices(user_id)==0 and incr == -1):
-            return
-        self.r.hincrby('num_devices',user_id,incr)
-        return
-    
-    def set_num_devices(self,user_id):
-        self.r.hset('num_devices',user_id,1) 
         
 if __name__ == "__main__":
-    # Create a account
-    
-    
-    # db_name = config('DB_NAME')
-    # db_user = config('DB_USER')
-    # db_password = config('DB_PASSWORD')
-    # db_host = config('DB_HOST')
-    # db_port = config('DB_PORT')
 
-    # db = Database(db_name, db_user, db_password, db_host, db_port)
-    
-    # mv = MovieQueries(db)
-    
-    # mv.create_movie("sarrix",1,"ABC",datetime.today(),1,1, 1, 1000)
-    # mv.create_movie("Inception",1,"LOLOLOLOLOLO",datetime.today(),1,1, 1, 4000)
-    # # mv.create_movie("Batman",1,"afdsv",datetime.today(),1,1)
-    # # mv.create_movie("Joy",1,"xdbxre",datetime.today(),2,1)
-    # # mv.create_movie("Her",1,"vjnzsik",datetime.today(),1,1)
-    
-    # db.commit_and_close()
-    # Log in
-    
     signup("tanishq.trivedi27@gmail.com", "123456")
     # signup("vivekpillai@gmail.com", "12345")
     
@@ -602,10 +461,7 @@ if __name__ == "__main__":
         
         account1.create_profile("tanishq", "1111")
         account1.login_profile("tanishq", "1111")
-        
-        
-        
-        
+
         # account2.payment_subscription('Premium','Cash')
         # account1.logout_profile()
         # account2.create_profile("pillai", "1111")
