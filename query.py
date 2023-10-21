@@ -11,18 +11,18 @@ class UserQueries:
         self.db = db
 
     def create_account(self, password, email):
-        query = f'INSERT INTO account (password, email) VALUES ({password}, {email});'
+        query = f'INSERT INTO account (password, email) VALUES (\'{password}\', \'{email}\');'
         self.db.execute_query(query)
         return self.db.fetch_one()
 
     def get_account_by_email_password(self, email, password):
-        query = f'SELECT account_id FROM account WHERE email = {email} AND password = {password};'
+        query = f'SELECT account_id FROM account WHERE email = \'{email}\' AND password = \'{password}\';'
         self.db.execute_query(query)
         return self.db.fetch_all()
     
     def update_account_password(self, email, old_password, new_password):
         if(self.get_account_by_email_password(email, old_password)):
-            query = f'update account set password={new_password} WHERE email = {email} AND password = {old_password};'
+            query = f'update account set password=\'{new_password}\' WHERE email = \'{email}\' AND password = \'{old_password}\';'
             self.db.execute_query(query)
             print(" UPDATED SUCCESSFULLY")
         else:
@@ -30,7 +30,7 @@ class UserQueries:
             
     
     def delete_account_by_email_password(self, email, password):
-        query = f'delete FROM account WHERE email = {email} AND password = {password};'
+        query = f'delete FROM account WHERE email = \'{email}\' AND password = \'{password}\';'
         self.db.execute_query(query)
         print("DELETED SUCCESSFULLY!")
         return self.db.fetch_all()
@@ -40,7 +40,7 @@ class MovieQueries:
         self.db = db
 
     def create_movie(self, title, genre_id, description, release_date, actor_id, director_id):
-        query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES ({title}, {genre_id}, {description}, {release_date}, {actor_id}, {director_id});'
+        query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES (\'{title}\', {genre_id}, \'{description}\', \'{release_date}\', {actor_id}, {director_id});'
         self.db.execute_query(query)
         print("MOVIE ADDED!")
         return self.db.fetch_one()
@@ -71,21 +71,27 @@ class Account:
         self.account_id = account_id
         self.profile_id = None
 
+    def _check_profilelogin(self):
+        if (self.profile_id is None):
+            print("Login first")
+            return True
+
+        return False
+        
     def create_profile(self, profile_name, profile_password):
         query1 = f'SELECT count(*) from profile WHERE account_id = {self.account_id}';
         self.db.execute_query(query1)
         cnt = self.db.fetch_one()
         if (cnt is not None):
-            count_prof = cnt[0]
-            if(count_prof >= 6):
+            if(cnt[0] >= 6):
                 print("Cannot add more profiles")
             else:        
-                query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},{profile_name}, {profile_password});'
+                query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
                 self.db.execute_query(query)
                 self.db.commit()
                 print("Profile Created!")
         else: # first profile is getting created
-            query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},{profile_name}, {profile_password});'
+            query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
             self.db.execute_query(query)
             print("Profile Created!")
             self.db.commit()
@@ -96,30 +102,51 @@ class Account:
         query1 = f'SELECT count(*) FROM SESSION where account_id={self.account_id} ;'
         self.db.execute_query(query1)
         # self.db.commit()
-        if(self.db.fetch_one() is None or self.db.fetch_one()[0] < 4):
-           
-            query = f'SELECT * FROM PROFILE WHERE profile_name={profile_name} and profile_password = {profile_password} AND account_id = {self.account_id};'
+        temp = self.db.fetch_one()
+        if(temp is not None):
+            # print(self.db.fetch_one())
+            if(temp[0] < 4):
+                query = f'SELECT * FROM PROFILE WHERE profile_name=\'{profile_name}\' and profile_password = \'{profile_password}\' AND account_id = {self.account_id};'
+                self.db.execute_query(query)
+                profileID = self.db.fetch_one()
+                if (profileID):
+                    self.profile_id = profileID[0]
+                    query2 = f'INSERT INTO session (account_id, profile_id, start_time) values ({self.account_id}, {self.profile_id}, \'{datetime.now()}\');'
+                    self.db.execute_query(query2)
+                    print("Succesfully logged in profile")
+                    self.db.commit()
+                    # query1 = f'INSERT INTO '
+                else:
+                    print("No such profile name or password")
+            else:
+                print("Exceeded number of sessions")
+        else:
+            query = f'SELECT * FROM PROFILE WHERE profile_name=\'{profile_name}\' and profile_password = \'{profile_password}\' AND account_id = {self.account_id};'
             self.db.execute_query(query)
             profileID = self.db.fetch_one()
             if (profileID):
                 self.profile_id = profileID[0]
-                query2 = f'INSERT INTO session (account_id, profile_id, start_time) values (self.account_id, self.profile_id, datetime.now());'
+                query2 = f'INSERT INTO session (account_id, profile_id, start_time) values ({self.account_id}, {self.profile_id}, \'{datetime.now()}\');'
                 self.db.execute_query(query2)
                 print("Succesfully logged in profile")
                 self.db.commit()
                 # query1 = f'INSERT INTO '
             else:
                 print("No such profile name or password")
-        else:
-            print("Exceeded number of sessions")
     
     def logout_profile(self):
+        if(self._check_profilelogin()):
+            return
+        
         query1 = f'DELETE from session where (account_id, profile_id) = ({self.account_id}, {self.profile_id})'
         self.db.execute_query(query1)
         self.db.commit()
         self.profile_id = None
         
     def add_movie_to_watchlist(self, movie_id):
+        if(self._check_profilelogin()):
+            return
+        
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
         # data1 = (movie_id)
         self.db.execute_query(query1)
@@ -127,7 +154,7 @@ class Account:
         cur_genre = res1[2]
         print(res1)
         time_stamp = "00:00:00"
-        query = f'INSERT INTO watchlist values (self.account_id, self.profile_id, movie_id, NULL, {time_stamp});'
+        query = f'INSERT INTO watchlist values ({self.account_id}, {self.profile_id}, {movie_id}, NULL, \'{time_stamp}\');'
         self.db.execute_query(query)
         self.db.commit()
         
@@ -141,26 +168,35 @@ class Account:
         # 
     
     def add_movie_to_wishlist(self, movie_id):
+        if(self._check_profilelogin()):
+            return
+
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
         # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
         print(res1)
-        query = f'INSERT INTO wishlist values (self.account_id, self.profile_id, movie_id);'
+        query = f'INSERT INTO wishlist values ({self.account_id}, {self.profile_id}, {movie_id});'
         self.db.execute_query(query)
         self.db.commit()
 
     def update_movie_timestamp(self, movie_id, timestamp):
+        if(self._check_profilelogin()):
+            return
+        
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
         # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
         print(res1)
-        query = f'UPDATE watchlist SET timestamp= {timestamp} WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
+        query = f'UPDATE watchlist SET timestamp= \'{timestamp}\' WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
         self.db.execute_query(query)
         self.db.commit()
     
     def delete_movie_from_wishlist(self, movie_id):
+        if(self._check_profilelogin()):
+            return
+        
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
         # data1 = (movie_id)
         self.db.execute_query(query1)
@@ -176,7 +212,7 @@ class Account:
         old = self.db.fetch_all()[0][1]
         
         if (old_password == old):
-            query = f'update account SET password = {new_password} WHERE account_id = {self.account_id};'
+            query = f'update account SET password = \'{new_password}\' WHERE account_id = {self.account_id};'
             self.db.execute_query(query)
             print(" UPDATED SUCCESSFULLY")
         else:
@@ -186,14 +222,14 @@ class Account:
     def payment_subscription(self,subscription_tier, payment_mode):
         subscription_tiers = ['Mobile','Basic','Standard','Premium']
         if(subscription_tier in subscription_tiers):
-            query = f'SELECT * from subscription_tiers where name ={subscription_tier};'
+            query = f'SELECT * from subscription_tiers where name =\'{subscription_tier}\';'
             self.db.execute_query(query)
             self.db.commit()
             
             sub_id = self.db.fetch_one()[0]
             expiration_date = datetime.now()+datetime.relativedelta(months=1)
             
-            query1 = f'INSERT INTO billing (account_id, payment_mode,subscription_type, billing_date, expiration_date) VALUES (self.account_id,{payment_mode},{sub_id},{datetime.now()},{expiration_date});'
+            query1 = f'INSERT INTO billing (account_id, payment_mode,subscription_type, billing_date, expiration_date) VALUES ({self.account_id},\'{payment_mode}\',{sub_id},\'{datetime.now()}\',\'{expiration_date}\');'
             
             prob = np.random.randn()
             self.db.execute_query(query1)
@@ -208,6 +244,9 @@ class Account:
             print("SUBSCRIPTION TIER IS NOT MATCHING")
             
     def get_user_recommendation(self):
+        if(self._check_profilelogin()):
+            return
+        
         rec_movies = self.redisdb.get_recommendation(self.account_id,self.profile_id)
         if(len(rec_movies) == 0):
             query2 = f'SELECT title FROM MOVIE LIMIT 5;'
@@ -217,7 +256,10 @@ class Account:
         else:
             return rec_movies
                   
-    def delete_account_profile(self):    
+    def delete_account_profile(self):
+        if(self._check_profilelogin()):
+            return
+        
         query = f'delete FROM profile WHERE account_id={self.account_id} and profile_id = {self.profile_id};'
         self.db.execute_query(query)
         print("DELETED profile SUCCESSFULLY!")
@@ -233,7 +275,7 @@ class Account:
                 
     def logout(self):
         self.db.commit_and_close()
-        self.redisdb.close()
+        self.redisdb.r.close()
 
 def signup(email, password):
     db_name = config('DB_NAME')
@@ -244,16 +286,14 @@ def signup(email, password):
 
     db = Database(db_name, db_user, db_password, db_host, db_port)
     query = f'SELECT * FROM account WHERE email = \'{email}\';'
-    print(query)
+    # print(query)
     if(is_valid_email(email)):
         try:
-            # print("vsbjvf")
             db.execute_query(query)
-            print("hrlo")
             if(db.fetch_all()):
                 print("ACCOUNT ALREADY EXISTS!")
             else:
-                query1 = f'INSERT INTO account (EMAIL, PASSWORD) VALUES({email}, {password});'
+                query1 = f'INSERT INTO account (EMAIL, PASSWORD) VALUES(\'{email}\', \'{password}\');'
                 db.execute_query(query1)
                 print("ACCOUNT CREATED! YOU CAN LOGIN NOW")
                 db.commit()
@@ -283,11 +323,12 @@ def login(email, password) -> Account or None:
     db = Database(db_name, db_user, db_password, db_host, db_port)
 
 
-    query = f'SELECT * FROM account WHERE EMAIL={email} and password = {password};'
+    query = f'SELECT * FROM account WHERE EMAIL=\'{email}\' and password = \'{password}\';'
     try:
         db.execute_query(query)
         ret1 = db.fetch_one()
         if(ret1):
+            print("Successfully logged in")
             return Account(ret1[0])
         else:
             print("Wrong password or email")
@@ -317,7 +358,6 @@ class RedisDB:
         rec_list = self.r.lrange(name, 0,5)
         return rec_list
     
-    
 
 # Example usage:
 if __name__ == "__main__":
@@ -330,6 +370,28 @@ if __name__ == "__main__":
     if (account1 is not None):
         account1.create_profile("tanishq", "1111")
         account1.login_profile("tanishq", "1111")
+        # account1.logout_profile()
+        
+        account1.create_profile("tanishq", "1111")
+        account1.login_profile("tanishq", "1111")
+        # account1.logout_profile()
+
+        account1.create_profile("tanishq", "1111")
+        account1.login_profile("tanishq", "1111")
+        # account1.logout_profile()
+
+        account1.create_profile("tanishq", "1111")
+        account1.login_profile("tanishq", "1111")
+        # account1.logout_profile()
+
+        account1.create_profile("tanishq", "1111")
+        account1.login_profile("tanishq", "1111")
+        account1.logout_profile()
+    
+        
+        # account1.create_profile("vivek", "1111")
+        account1.login_profile("arun", "1111")
+        # account1.logout_profile()
         # account1.add_movie_to_watchlist(11)
         # account1.update_movie_timestamp(11, "1:22:45")
 
