@@ -1,6 +1,7 @@
 import psycopg2
 from decouple import config
 
+
 class Database:
     def __init__(self, dbname, user, password, host, port):
         self.conn = psycopg2.connect(
@@ -28,7 +29,7 @@ class Database:
         self.conn.rollback()
 
     def create_table(self, table_name, columns):
-        create_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns})"
+        create_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns});"
         self.cur.execute(create_query)
 
     def commit_and_close(self):
@@ -36,18 +37,18 @@ class Database:
         self.cur.close()
         self.conn.close()
 
-def create_user_table(db):
+def create_account_table(db):
     columns = """
-        user_id SERIAL PRIMARY KEY,
+        account_id SERIAL PRIMARY KEY,
         password VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE
     """
-    db.create_table("user", columns)
+    db.create_table("account", columns)
 
 def create_profile_table(db):
     columns = """
         profile_id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES user(user_id),
+        account_id INT REFERENCES account(account_id) on delete cascade,
         profile_name VARCHAR(255) NOT NULL,
         profile_password VARCHAR(255) NOT NULL
     """
@@ -56,7 +57,7 @@ def create_profile_table(db):
 def create_billing_table(db):
     columns = """
         billing_id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES user(user_id),
+        account_id INT REFERENCES account(account_id),
         payment_mode VARCHAR(255) NOT NULL,
         subscription_type INT REFERENCES subscription_tiers(tier_id),
         billing_date TIMESTAMP NOT NULL,
@@ -67,7 +68,7 @@ def create_billing_table(db):
 # def create_invoice_table(db):
 #     columns = """
 #         billing_id SERIAL PRIMARY KEY,
-#         user_id INT REFERENCES user(user_id),
+#         account_id INT REFERENCES account(account_id),
 #         payment_mode VARCHAR(255) NOT NULL,
 #         subscription_type INT REFERENCES subscription_tiers(tier_id),
 #         billing_date TIMESTAMP NOT NULL,
@@ -75,20 +76,20 @@ def create_billing_table(db):
 #     """
 #     db.create_table("invoice", columns)
 
-def create_streaming_session_table(db):
+def create_session_table(db):
     columns = """
         session_id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES user(user_id),
+        account_id INT REFERENCES account(account_id),
         profile_id INT REFERENCES profile(profile_id),
         start_time TIMESTAMP,
         end_time TIMESTAMP
     """
-    db.create_table("streaming_session", columns)
+    db.create_table("session", columns)
 
 def create_subscription_tiers_table(db):
     columns = """
         tier_id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL CHECK(name in ('Mobile','Basic','Standard','Premium')),
         price DECIMAL(10, 2) NOT NULL,
         max_devices INT
     """
@@ -129,23 +130,31 @@ def create_genre_table(db):
 
 def create_watchlist_table(db):
     columns = """
-        user_id INT REFERENCES user(user_id),
+        account_id INT REFERENCES account(account_id),
         profile_id INT REFERENCES profile(profile_id),
         movie_id INT REFERENCES movie(movie_id),
         rating VARCHAR(255) CHECK (rating IN ('Not for me', 'I like this', 'Love this')),
         timestamp TIME,
-        PRIMARY KEY (user_id, profile_id, movie_id)
+        PRIMARY KEY (account_id, profile_id, movie_id)
     """
     db.create_table("watchlist", columns)
 
 def create_wishlist_table(db):
     columns = """
-        user_id INT REFERENCES user(user_id),
+        account_id INT REFERENCES account(account_id),
         profile_id INT REFERENCES profile(profile_id),
         movie_id INT REFERENCES movie(movie_id),
-        PRIMARY KEY (user_id, profile_id, movie_id)
+        PRIMARY KEY (account_id, profile_id, movie_id)
     """
     db.create_table("wishlist", columns)
+
+def revenue(db):
+    columns = """
+        month varchar(255) not null check(month in ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')),
+        year int(4) not null check(year>=2000 and year <=3000),
+        revenue int not null
+    """
+    db.create_table("revenue", columns)
 
 
 if __name__ == "__main__":
@@ -157,16 +166,17 @@ if __name__ == "__main__":
 
     db = Database(db_name, db_user, db_password, db_host, db_port)
 
-    create_user_table(db)
+    create_account_table(db)
     create_profile_table(db)
+    create_subscription_tiers_table(db)
     create_billing_table(db)
     # create_invoice_table(db)
-    create_streaming_session_table(db)
-    create_subscription_tiers_table(db)
-    create_movie_table(db)
+    create_session_table(db)
     create_actor_table(db)
     create_director_table(db)
     create_genre_table(db)
+    create_movie_table(db)
+    
     create_watchlist_table(db)
     # create_interaction_table(db)
     create_wishlist_table(db)
