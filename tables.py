@@ -158,6 +158,7 @@ def revenue(db):
 
 def create_database():
     conn = psycopg2.connect(
+            dbname="postgres",
             user=config('DB_USER'),
             password=config('DB_PASSWORD'),
             host=config('DB_HOST'),
@@ -171,7 +172,9 @@ def create_database():
     conn.close()
     
 if __name__ == "__main__":
-    create_database()
+    # print("vjsvj")
+    # create_database()
+    # print("hhb")
     
     db_name = config('DB_NAME')
     db_user = config('DB_USER')

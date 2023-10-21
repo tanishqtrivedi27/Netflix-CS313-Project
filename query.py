@@ -171,12 +171,12 @@ class Account:
         self.db.commit()
 
     def update_account_password(self, old_password, new_password):
-        query1 = f'SELECT * FROM USER WHERE account_id = {self.account_id};'
+        query1 = f'SELECT * FROM account WHERE account_id = {self.account_id};'
         self.db.execute_query(query1);
         old = self.db.fetch_all()[0][1]
         
         if (old_password == old):
-            query = f'update USER SET password = {new_password} WHERE account_id = {self.account_id};'
+            query = f'update account SET password = {new_password} WHERE account_id = {self.account_id};'
             self.db.execute_query(query)
             print(" UPDATED SUCCESSFULLY")
         else:
@@ -218,7 +218,7 @@ class Account:
             return rec_movies
                   
     def delete_account_profile(self):    
-        query = f'delete FROM profile WHERE USER_id={self.account_id} and profile_id = {self.profile_id};'
+        query = f'delete FROM profile WHERE account_id={self.account_id} and profile_id = {self.profile_id};'
         self.db.execute_query(query)
         print("DELETED profile SUCCESSFULLY!")
         
@@ -226,7 +226,7 @@ class Account:
         self.db.commit()
         
     def delete_account(self):
-        query = f'DELETE FROM USER WHERE account_id = {self.account_id};'
+        query = f'DELETE FROM account WHERE account_id = {self.account_id};'
         self.db.execute_query(query)
         self.db.commit()
         self.logout()
@@ -243,15 +243,17 @@ def signup(email, password):
     db_port = config('DB_PORT')
 
     db = Database(db_name, db_user, db_password, db_host, db_port)
-    query = f'SELECT * FROM USER WHERE email = {email};'
-    
+    query = f'SELECT * FROM account WHERE email = \'{email}\';'
+    print(query)
     if(is_valid_email(email)):
         try:
+            # print("vsbjvf")
             db.execute_query(query)
+            print("hrlo")
             if(db.fetch_all()):
                 print("ACCOUNT ALREADY EXISTS!")
             else:
-                query1 = f'INSERT INTO USER (EMAIL, PASSWORD) VALUES({email}, {password});'
+                query1 = f'INSERT INTO account (EMAIL, PASSWORD) VALUES({email}, {password});'
                 db.execute_query(query1)
                 print("ACCOUNT CREATED! YOU CAN LOGIN NOW")
                 db.commit()
@@ -281,7 +283,7 @@ def login(email, password) -> Account or None:
     db = Database(db_name, db_user, db_password, db_host, db_port)
 
 
-    query = f'SELECT * FROM USER WHERE EMAIL={email} and password = {password};'
+    query = f'SELECT * FROM account WHERE EMAIL={email} and password = {password};'
     try:
         db.execute_query(query)
         ret1 = db.fetch_one()
@@ -328,8 +330,7 @@ if __name__ == "__main__":
     if (account1 is not None):
         account1.create_profile("tanishq", "1111")
         account1.login_profile("tanishq", "1111")
-        account1.add_movie_to_watchlist(11)
-        account1.update_movie_timestamp(11, "1:22:45")
+        # account1.add_movie_to_watchlist(11)
+        # account1.update_movie_timestamp(11, "1:22:45")
 
         logout(account1)
-fetch_all
