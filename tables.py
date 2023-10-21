@@ -24,9 +24,8 @@ class Database:
 def create_user_table(db):
     columns = """
         user_id SERIAL PRIMARY KEY,
-        username VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL
+        email VARCHAR(255) NOT NULL UNIQUE
     """
     db.create_table("user", columns)
 

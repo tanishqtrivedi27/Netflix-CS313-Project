@@ -12,11 +12,20 @@ class Database:
         )
         self.cur = self.conn.cursor()
 
-    def execute_query(self, query, data=None):
-        self.cur.execute(query, data)
+    def execute_query(self, query):
+        self.cur.execute(query)
+        
+    def fetch_one(self):
+        return self.cur.fetchone()
 
     def fetch_all(self):
         return self.cur.fetchall()
+    
+    def commit(self):
+        self.conn.commit()
+    
+    def rollback(self):
+        self.conn.rollback()
 
     def commit_and_close(self):
         self.conn.commit()
@@ -27,36 +36,54 @@ class UserQueries:
     def __init__(self, db):
         self.db = db
 
-    def create_user(self, username, password, email):
-        query = "INSERT INTO user (username, password, email) VALUES (%s, %s, %s) RETURNING user_id"
-        data = (username, password, email)
-        self.db.execute_query(query, data)
-        return self.db.cur.fetchone()[0]
+    def create_user(self, password, email):
+        query = f'INSERT INTO user (password, email) VALUES ({password}, {email});'
+        self.db.execute_query(query)
+        return self.db.fetchone()
 
     def get_user_by_email_password(self, email, password):
-        query = "SELECT user_id FROM user WHERE email = %s AND password = %s"
-        data = (email, password)
-        self.db.execute_query(query, data)
+        query = f'SELECT user_id FROM user WHERE email = {email} AND password = {password};'
+        self.db.execute_query(query)
+        return self.db.fetch_all()
+    
+    def update_user_password(self, email, old_password, new_password):
+        if(self.get_user_by_email_password(email, old_password)):
+            query = f'update user set password={new_password} WHERE email = {email} AND password = {old_password};'
+            self.db.execute_query(query)
+            print(" UPDATED SUCCESSFULLY")
+        else:
+            print("WRONG EMAIL OR OLD PASSWORD")
+            
+    
+    def delete_user_by_email_password(self, email, password):
+        query = f'delete FROM user WHERE email = {email} AND password = {password};'
+        self.db.execute_query(query)
+        print("DELETED SUCCESSFULLY!")
         return self.db.fetch_all()
 
 class MovieQueries:
     def __init__(self, db):
         self.db = db
 
-    def create_movie(self, title, genre_id, description, release_date):
-        query = "INSERT INTO movie (title, genre_id, description, release_date) VALUES (%s, %s, %s, %s) RETURNING movie_id"
-        data = (title, genre_id, description, release_date)
-        self.db.execute_query(query, data)
-        return self.db.cur.fetchone()[0]
+    def create_movie(self, title, genre_id, description, release_date, actor_id, director_id):
+        query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES ({title}, {genre_id}, {description}, {release_date}, {actor_id}, {director_id});'
+        self.db.execute_query(query)
+        print("MOVIE ADDED!")
+        return self.db.fetchone()
 
-    def get_movie_by_title(self, title):
-        query = "SELECT movie_id FROM movie WHERE title = %s"
-        data = (title,)
-        self.db.execute_query(query, data)
-        return self.db.fetch_all()
+    def get_movie_by_movieid(self, movie_id):
+        query = f'SELECT * FROM movie WHERE movie_id = {movie_id};'
+        self.db.execute_query(query)
+        print(self.db.fetch_all())
+    
+    def delete_movie_by_movieid(self, movie_id):
+        query = f'delete FROM movie WHERE movie_id = {movie_id};'
+        self.db.execute_query(query)
+        print("DELETED MOVIE!")
 
 class User:
-    def __init__(self, username, password, email):
+    def __init__(self, user_id, profile_id):
+        
         self.db_name = config('DB_NAME')
         self.db_user = config('DB_USER')
         self.db_password = config('DB_PASSWORD')
@@ -64,164 +91,74 @@ class User:
         self.db_port = config('DB_PORT')
         
         self.db = Database(self.db_name, self.db_user, self.db_password, self.db_host, self.db_port)
-        self.user_queries = UserQueries(self.db)
-        self.movie_queries = MovieQueries(self.db)
+        # self.user_queries = UserQueries(self.db)
+        # self.movie_queries = MovieQueries(self.db)
 
-        self.username = username
-        self.password = password
-        self.email = email
-        self.user_id = None
+        self.user_id = user_id
+        self.profile_id = profile_id
 
-    def signup(self):
-        # Check if the user already exists
-        user_data = self.user_queries.get_user_by_email_password(self.email, self.password)
-        if user_data:
-            return "User already exists. Please log in."
+
+    def add_movie_to_watchlist(self, movie_id):
+        query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
+        # data1 = (movie_id)
+        self.db.execute_query(query1)
+        res1 = self.db.fetchone()
+        print(res1)
+        time_stamp = "00:00:00"
+        query = f'INSERT INTO watchlist values (self.user_id, self.profile_id, movie_id, NULL, {time_stamp});'
+        self.db.execute_query(query)
+        self.db.commit()
+    
+    def add_movie_to_wishlist(self, movie_id):
+        query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
+        # data1 = (movie_id)
+        self.db.execute_query(query1)
+        res1 = self.db.fetchone()
+        print(res1)
+        query = f'INSERT INTO wishlist values (self.user_id, self.profile_id, movie_id);'
+        self.db.execute_query(query)
+        self.db.commit()
+
+    def update_movie_timestamp(self, movie_id, timestamp):
+        query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
+        # data1 = (movie_id)
+        self.db.execute_query(query1)
+        res1 = self.db.fetchone()
+        print(res1)
+        query = f'UPDATE watchlist SET timestamp= {timestamp} WHERE (user_id, profile_id, MOVIE_id) = ({self.user_id}, {self.profile_id}, {movie_id});'
+        self.db.execute_query(query)
+        self.db.commit()
+    
+    def delete_movie_from_wishlist(self, movie_id):
+        query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
+        # data1 = (movie_id)
+        self.db.execute_query(query1)
+        res1 = self.db.fetchone()
+        print(res1)
+        query = f'DELETE FROM wishlist WHERE (user_id, profile_id, MOVIE_id) = ({self.user_id}, {self.profile_id}, {movie_id});'
+        self.db.execute_query(query)
+        self.db.commit()
         
-        # Create the user and get the user_id
-        self.user_id = self.user_queries.create_user(self.username, self.password, self.email)
-        return "User created successfully."
-
-    def login(self):
-        # Check if the user exists
-        user_data = self.user_queries.get_user_by_email_password(self.email, self.password)
-        if not user_data:
-            return "Invalid email or password."
-
-        # Set the user_id
-        self.user_id = user_data[0][0]
-        return "Login successful."
-
-    def add_movie_to_watchlist(self, title):
-        # Create the movie if it doesn't exist
-        movie_data = self.movie_queries.get_movie_by_title(title)
-        if not movie_data:
-            movie_id = self.movie_queries.create_movie(title, 1, "Description not available", "2023-01-01")
+    def update_user_password(self, old_password, new_password):
+        query1 = f'SELECT * FROM USER WHERE user_id = {self.user_id};'
+        self.db.execute_query(query1);
+        old = self.db.fetch_all()[1]
+        
+        if (old_password == old):
+            query = f'update USER SET password = {new_password} WHERE user_id = {self.user_id};'
+            self.db.execute_query(query)
+            print(" UPDATED SUCCESSFULLY")
         else:
-            movie_id = movie_data[0][0]
-
-        # Add the movie to the watchlist
-        watchlist_query = """
-            INSERT INTO watchlist (user_id, profile_id, movie_id, rating, timestamp)
-            VALUES (%s, %s, %s, %s, '00:00:00')
-        """
-        data = (self.user_id, 1, movie_id, "Not for me")
-        self.db.execute_query(watchlist_query, data)
-        self.db.commit_and_close()
-        return "Movie added to watchlist."
-
-    def update_movie_timestamp(self, title, timestamp):
-        # Get the movie_id by title
-        movie_data = self.movie_queries.get_movie_by_title(title)
-        if not movie_data:
-            return "Movie not found."
-
-        movie_id = movie_data[0][0]
-
-        # Update the timestamp in the watchlist
-        update_timestamp_query = """
-            UPDATE watchlist
-            SET timestamp = %s
-            WHERE user_id = %s AND profile_id = %s AND movie_id = %s
-        """
-        data = (timestamp, self.user_id, 1, movie_id)
-        self.db.execute_query(update_timestamp_query, data)
-        self.db.commit_and_close()
-        return "Timestamp updated successfully."
-
-# Example usage:
-if __name__ == "__main__":
-    # Create a user
-    user = User("example_user", "password123", "example@example.com")
-    signup_result = user.signup()
-    print(signup_result)
-
-    # Log in
-    login_result = user.login()
-    print(login_result)
-
-    # Add a movie to the watchlist
-    add_movie_result = user.add_movie_to_watchlist("Sample Movie")
-    print(add_movie_result)
-
-    # Update the timestamp for a movie in the watchlist
-    update_timestamp_result = user.update_movie_timestamp("Sample Movie", "02:30:00")
-    print(update_timestamp_result)
-
-# Create other classes and functions for different tables as needed
-class User:
-    def __init__(self, username, password, email):
-        self.db_name = config('DB_NAME')
-        self.db_user = config('DB_USER')
-        self.db_password = config('DB_PASSWORD')
-        self.db_host = config('DB_HOST')
-        self.db_port = config('DB_PORT')
+            print("OLD PASSWORD doesn't match")
+            
+    
+    def delete_user(self):
+        query = f'delete FROM user WHERE USER_id={self.user_id};'
+        self.db.execute_query(query)
+        print("DELETED SUCCESSFULLY!")
         
-        self.db = Database(self.db_name, self.db_user, self.db_password, self.db_host, self.db_port)
-        self.user_queries = UserQueries(self.db)
-        self.movie_queries = MovieQueries(self.db)
-
-        self.username = username
-        self.password = password
-        self.email = email
-        self.user_id = None
-
-    def signup(self):
-        # Check if the user already exists
-        user_data = self.user_queries.get_user_by_email_password(self.email, self.password)
-        if user_data:
-            return "User already exists. Please log in."
-        
-        # Create the user and get the user_id
-        self.user_id = self.user_queries.create_user(self.username, self.password, self.email)
-        return "User created successfully."
-
-    def login(self):
-        # Check if the user exists
-        user_data = self.user_queries.get_user_by_email_password(self.email, self.password)
-        if not user_data:
-            return "Invalid email or password."
-
-        # Set the user_id
-        self.user_id = user_data[0][0]
-        return "Login successful."
-
-    def add_movie_to_watchlist(self, title):
-        # Create the movie if it doesn't exist
-        movie_data = self.movie_queries.get_movie_by_title(title)
-        if not movie_data:
-            movie_id = self.movie_queries.create_movie(title, 1, "Description not available", "2023-01-01")
-        else:
-            movie_id = movie_data[0][0]
-
-        # Add the movie to the watchlist
-        watchlist_query = """
-            INSERT INTO watchlist (user_id, profile_id, movie_id, rating, timestamp)
-            VALUES (%s, %s, %s, %s, '00:00:00')
-        """
-        data = (self.user_id, 1, movie_id, "Not for me")
-        self.db.execute_query(watchlist_query, data)
+    def logout(self):
         self.db.commit_and_close()
-        return "Movie added to watchlist."
-
-    def update_movie_timestamp(self, title, timestamp):
-        # Get the movie_id by title
-        movie_data = self.movie_queries.get_movie_by_title(title)
-        if not movie_data:
-            return "Movie not found."
-
-        movie_id = movie_data[0][0]
-
-        # Update the timestamp in the watchlist
-        update_timestamp_query = """
-            UPDATE watchlist
-            SET timestamp = %s
-            WHERE user_id = %s AND profile_id = %s AND movie_id = %s
-        """
-        data = (timestamp, self.user_id, 1, movie_id)
-        self.db.execute_query(update_timestamp_query, data)
-        self.db.commit_and_close()
-        return "Timestamp updated successfully."
 
 # Example usage:
 if __name__ == "__main__":
@@ -242,7 +179,24 @@ if __name__ == "__main__":
     update_timestamp_result = user.update_movie_timestamp("Sample Movie", "02:30:00")
     print(update_timestamp_result)
     
-if __name__ == "__main__":
+
+def signup(email, password, profile, profile_password):
+    db_name = config('DB_NAME')
+    db_user = config('DB_USER')
+    db_password = config('DB_PASSWORD')
+    db_host = config('DB_HOST')
+    db_port = config('DB_PORT')
+
+    db = Database(db_name, db_user, db_password, db_host, db_port)
+    
+    query = f'SELECT * FROM USER WHERE email = {email} and password = {password};'
+    db.execute_query(query)
+    
+    db.commit_and_close()    
+    
+
+def login(email, password, profile_name, profile_password):
+    # Check if the user exists
     db_name = config('DB_NAME')
     db_user = config('DB_USER')
     db_password = config('DB_PASSWORD')
@@ -251,20 +205,19 @@ if __name__ == "__main__":
 
     db = Database(db_name, db_user, db_password, db_host, db_port)
 
-    # Example usage of UserQueries
-    user_queries = UserQueries(db)
-    # user_id = user_queries.create_user("example_user", "password123")
-    # print(f"Created user with ID: {user_id}")
 
-    users = user_queries.get_user_by_username("example_user")
-    print("Users with the username 'example_user':", users)
-
-    # Example usage of MovieQueries
-    movie_queries = MovieQueries(db)
-    movie_id = movie_queries.create_movie("Sample Movie", 1, "A sample movie description.", "2023-01-01")
-    print(f"Created movie with ID: {movie_id}")
-
-    movies = movie_queries.get_movie_by_title("Sample Movie")
-    print("Movies with the title 'Sample Movie':", movies)
-
+    query = f'SELECT * FROM USER WHERE EMAIL={email} and password = {password};'
+    db.execute_query(query)
+    ret1 = db.fetch_one()
+    if(ret1):
+        query = f'SELECT * FROM PROFILE WHERE profile_name={profile_name} and profile_password = {profile_password};'
+        db.execute_query(query)
+        ret2 = db.fetch_one()
+        if (ret2):
+            return User(ret1[0], ret2[0])
+        else:
+            print("Wrong profile_name or profile_password")
+    else:
+        print("Wrong password or email")
+        
     db.commit_and_close()
