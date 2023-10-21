@@ -34,7 +34,6 @@ class RedisDB:
     def set_num_devices(self,user_id):
         self.r.hset('num_devices',user_id,1)
 
-
 class Database:
     def __init__(self, dbname, user, password, host, port):
         self.conn = psycopg2.connect(

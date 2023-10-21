@@ -351,8 +351,6 @@ class Account:
         else:
             print("YOU HAVE NOT WATCHED THE MOVIE YET")
         self.db.commit()
-        
-        
                   
     def delete_account_profile(self):
         if(self._check_profilelogin()):
@@ -442,7 +440,6 @@ def logout(account: Account):
     print("Logout account")
     account.logout()
     del account
-
         
 if __name__ == "__main__":
 
