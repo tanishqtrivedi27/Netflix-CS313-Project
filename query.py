@@ -82,7 +82,7 @@ class MovieQueries:
         print("DELETED MOVIE!")
 
 class User:
-    def __init__(self, user_id, profile_id):
+    def __init__(self, user_id):
         
         self.db_name = config('DB_NAME')
         self.db_user = config('DB_USER')
@@ -95,9 +95,32 @@ class User:
         # self.movie_queries = MovieQueries(self.db)
 
         self.user_id = user_id
-        self.profile_id = profile_id
-
-
+        self.profile_id = None
+        
+    def create_profile(self, profile_name, profile_password):
+        query1 = f'SELECT count(*) from profile WHERE user_id = {self.user_id}';
+        self.db.execute_query(query1)
+        count_prof = self.db.fetch_one()[0]
+        if(count_prof >= 6):
+            print("Cannot add more profiles")
+        else:        
+            query = f'INSERT INTO profile (user_id, profile_name, profile_password) VALUES ({self.user_id},{profile_name}, {profile_password});'
+            self.db.execute_query(query)
+            print("Profile Created!")
+        
+    def login_profile(self, profile_name, profile_password):
+        query = f'SELECT * FROM PROFILE WHERE profile_name={profile_name} and profile_password = {profile_password} AND user_id = {self.user_id};'
+        self.db.execute_query(query)
+        ret1 = self.db.fetch_one()
+        if (ret1):
+            self.profile_id = ret1[0]
+            print("Succesfully logged in profile")
+        else:
+            print("No such profile name or password")
+    
+    def logout_profile(self):
+        self.profile_id = None
+        
     def add_movie_to_watchlist(self, movie_id):
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
         # data1 = (movie_id)
@@ -189,13 +212,19 @@ def signup(email, password, profile, profile_password):
 
     db = Database(db_name, db_user, db_password, db_host, db_port)
     
-    query = f'SELECT * FROM USER WHERE email = {email} and password = {password};'
+    query = f'SELECT * FROM USER WHERE email = {email};'
     db.execute_query(query)
+    if(db.fetch_all()):
+        print("ACCOUNT ALREADY EXISTS!")
+    else:
+        query1 = f'INSERT INTO USER (EMAIL, PASSWORD) VALUES({email}, {password});'
+        db.execute_query(query1)
+        print("ACCOUNT CREATED! YOU CAN LOGIN NOW")
     
     db.commit_and_close()    
     
 
-def login(email, password, profile_name, profile_password):
+def login(email, password):
     # Check if the user exists
     db_name = config('DB_NAME')
     db_user = config('DB_USER')
@@ -210,13 +239,7 @@ def login(email, password, profile_name, profile_password):
     db.execute_query(query)
     ret1 = db.fetch_one()
     if(ret1):
-        query = f'SELECT * FROM PROFILE WHERE profile_name={profile_name} and profile_password = {profile_password};'
-        db.execute_query(query)
-        ret2 = db.fetch_one()
-        if (ret2):
-            return User(ret1[0], ret2[0])
-        else:
-            print("Wrong profile_name or profile_password")
+        return User(ret1[0])
     else:
         print("Wrong password or email")
         
