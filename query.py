@@ -82,18 +82,26 @@ class Account:
         query1 = f'SELECT count(*) from profile WHERE account_id = {self.account_id}';
         self.db.execute_query(query1)
         cnt = self.db.fetch_one()
+        
+        query3 = f'SELECT count(*) from profile WHERE account_id = {self.account_id} and profile_name=\'{profile_name}\';'
+        self.db.execute_query(query3);
+        cnt2 = self.db.fetch_one()
+        if(cnt2[0] !=0):
+            print("PROFILE WITH SAME NAME EXISTS")
+            return
+            
         if (cnt is not None):
             if(cnt[0] >= 6):
-                print("Cannot add more profiles")
+                print("CANNOT ADD MORE PROFILES")
             else:        
                 query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
                 self.db.execute_query(query)
                 self.db.commit()
-                print("Profile Created!")
+                print(f'Profile Created for {profile_name}!')
         else: # first profile is getting created
             query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
             self.db.execute_query(query)
-            print("Profile Created!")
+            print(f'Profile Created for {profile_name}!')
             self.db.commit()
             
     
@@ -109,7 +117,17 @@ class Account:
                 query = f'SELECT * FROM PROFILE WHERE profile_name=\'{profile_name}\' and profile_password = \'{profile_password}\' AND account_id = {self.account_id};'
                 self.db.execute_query(query)
                 profileID = self.db.fetch_one()
+                
                 if (profileID):
+                    
+                    queryn = f'SELECT count(*) FROM SESSION where account_id={self.account_id} and profile_id = {profileID[0]};'
+                    self.db.execute_query(queryn)
+                    cnt_id = self.db.fetch_one()
+                    
+                    if(cnt_id[0] > 0 ):
+                        print("PROFILE ALREADY LOGGED IN ")
+                        return
+                    
                     self.profile_id = profileID[0]
                     query2 = f'INSERT INTO session (account_id, profile_id, start_time) values ({self.account_id}, {self.profile_id}, \'{datetime.now()}\');'
                     self.db.execute_query(query2)
@@ -142,6 +160,7 @@ class Account:
         self.db.execute_query(query1)
         self.db.commit()
         self.profile_id = None
+        print("SUCCesfully logged out profile")
         
     def add_movie_to_watchlist(self, movie_id):
         if(self._check_profilelogin()):
@@ -328,7 +347,7 @@ def login(email, password) -> Account or None:
         db.execute_query(query)
         ret1 = db.fetch_one()
         if(ret1):
-            print("Successfully logged in")
+            print("Successfully logged in account")
             return Account(ret1[0])
         else:
             print("Wrong password or email")
@@ -339,6 +358,7 @@ def login(email, password) -> Account or None:
     return None
 
 def logout(account: Account):
+    print("Logout account")
     account.logout()
     del account
     
