@@ -20,6 +20,8 @@ class Account:
         self.account_id = account_id
         self.profile_id = None
 
+        # query to find whether user has an active subscription plan
+
         self._active_sub = False
 
         query = f'SELECT * from billing WHERE account_id = {self.account_id} AND expiration_date > DATE(NOW());'
@@ -30,7 +32,16 @@ class Account:
 
         if (not self._active_sub):
             print("Select a subscription and PAY!!!")
-        
+
+        # query to find max num of devices allowed on subscription plan
+        self._get_devices = 0
+        if (self._active_sub):
+            
+            tier_id = resz[3]
+            query2 = f'SELECT * from subscription_tiers WHERE tier_id = {tier_id};'
+            self.db.execute_query(query2)
+            self._get_devices = self.db.fetch_one()[3]
+
 
     def _check_profilelogin(self):
         if (self.profile_id is None):
@@ -69,7 +80,7 @@ class Account:
         if (not self._active_sub):
             print("Buy a subscription plan.")
         
-        if(self.redisdb.get_num_devices(self.account_id)>=4):
+        if(self.redisdb.get_num_devices(self.account_id) >= self._get_devices):
             print("EXCEEDED NUMBER OF PERMITTED DEVICES")
             return
         
@@ -83,7 +94,7 @@ class Account:
         temp = self.db.fetch_one()
         if(temp is not None):
             # print(self.db.fetch_one())
-            if(temp[0] < 4):
+            if(temp[0] < self._get_devices):
                 query = f'SELECT * FROM PROFILE WHERE profile_name=\'{profile_name}\' and profile_password = \'{profile_password}\' AND account_id = {self.account_id};'
                 self.db.execute_query(query)
                 profileID = self.db.fetch_one()
@@ -277,6 +288,7 @@ class Account:
         if(subscription_tier in subscription_tiers):
             query = f'SELECT * from subscription_tiers where name =\'{subscription_tier}\';'
             self.db.execute_query(query)
+            kkkkk = self.db.fetch_one()[3]
             self.db.commit()
             
             x=self.db.fetch_one()
@@ -313,6 +325,8 @@ class Account:
                 self.db.rollback()
                 print("TRANSACTION FAILED")
             else:
+                self._active_sub = True
+                self._get_devices = kkkkk
                 print("TRANSACTION SUCCESSFUL")
                 self.db.commit()
                 
