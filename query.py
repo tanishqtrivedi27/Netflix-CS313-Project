@@ -407,6 +407,41 @@ class Account:
             return rec_ls
         else:
             return rec_movies
+               
+    def resume_movie(self,movie_id):
+        if(self._check_profilelogin()):
+            return
+        query = f'SELECT * FROM WATCHLIST WHERE account_id ={self.account_id} and profile_id ={self.profile_id} and movie_id = {movie_id};'
+        self.db.execute_query(query)
+        res = self.db.fetch_one()
+        if(res is not None):
+            print("MOVIE RESUMED FROM TIMESTAMP", res[4])
+            self.db.commit()
+            return res[4]
+        else:
+            print("YOU HAVE NOT WATCHED THE MOVIE YET")
+        self.db.commit()
+        
+    def rate_movie(self,movie_id,rating):
+        poss_rat = ['Not for me', 'I like this', 'Love this']
+        if(rating not in poss_rat):
+            print("INVALID RATING")
+            return
+        if(self._check_profilelogin()):
+            return
+        query = f'SELECT * FROM WATCHLIST WHERE account_id ={self.account_id} and profile_id ={self.profile_id} and movie_id = {movie_id};'
+        self.db.execute_query(query)
+        res = self.db.fetch_one()
+        if(res is not None):
+            query1 = f'UPDATE watchlist SET rating = {rating} WHERE account_id ={self.account_id} and profile_id ={self.profile_id} and movie_id = {movie_id};'
+            self.db.execute_query(query1)
+            print("RATED SUCCESSFULLY")
+            self.db.commit()
+        else:
+            print("YOU HAVE NOT WATCHED THE MOVIE YET")
+        self.db.commit()
+        
+        
                   
     def delete_account_profile(self):
         if(self._check_profilelogin()):
@@ -533,40 +568,42 @@ if __name__ == "__main__":
     # Create a account
     
     
-    db_name = config('DB_NAME')
-    db_user = config('DB_USER')
-    db_password = config('DB_PASSWORD')
-    db_host = config('DB_HOST')
-    db_port = config('DB_PORT')
+    # db_name = config('DB_NAME')
+    # db_user = config('DB_USER')
+    # db_password = config('DB_PASSWORD')
+    # db_host = config('DB_HOST')
+    # db_port = config('DB_PORT')
 
-    db = Database(db_name, db_user, db_password, db_host, db_port)
+    # db = Database(db_name, db_user, db_password, db_host, db_port)
     
-    mv = MovieQueries(db)
+    # mv = MovieQueries(db)
     
-    mv.create_movie("sarrix",1,"ABC",datetime.today(),1,1, 1, 1000)
-    mv.create_movie("Inception",1,"LOLOLOLOLOLO",datetime.today(),1,1, 1, 4000)
-    # mv.create_movie("Batman",1,"afdsv",datetime.today(),1,1)
-    # mv.create_movie("Joy",1,"xdbxre",datetime.today(),2,1)
-    # mv.create_movie("Her",1,"vjnzsik",datetime.today(),1,1)
+    # mv.create_movie("sarrix",1,"ABC",datetime.today(),1,1, 1, 1000)
+    # mv.create_movie("Inception",1,"LOLOLOLOLOLO",datetime.today(),1,1, 1, 4000)
+    # # mv.create_movie("Batman",1,"afdsv",datetime.today(),1,1)
+    # # mv.create_movie("Joy",1,"xdbxre",datetime.today(),2,1)
+    # # mv.create_movie("Her",1,"vjnzsik",datetime.today(),1,1)
     
-    db.commit_and_close()
+    # db.commit_and_close()
     # Log in
     
-    # signup("tanishq.trivedi27@gmail.com", "123456")
+    signup("tanishq.trivedi27@gmail.com", "123456")
     # signup("vivekpillai@gmail.com", "12345")
     
-    # account1 = login("tanishq.trivedi27@gmail.com", "123456")
+    account1 = login("tanishq.trivedi27@gmail.com", "123456")
     # account2 = login("vivekpillai@gmail.com", "12345")
     # account3 = login("tanishq.trivedi27@gmail.com", "123456")
     # account4 = login("tanishq.trivedi27@gmail.com", "123456")
     
     # Add a movie to the watchlist
-    # if (account1 is not None):
+    if (account1 is not None):
         
         # account1.payment_subscription('Standard','UPI')
         
-        # account1.create_profile("tanishq", "1111")
-        # account1.login_profile("tanishq", "1111")
+        account1.create_profile("tanishq", "1111")
+        account1.login_profile("tanishq", "1111")
+        
+        
         
         
         # account2.payment_subscription('Premium','Cash')
@@ -600,8 +637,16 @@ if __name__ == "__main__":
         # account1.update_account_password("Kushal","123456")
         
         
-        # account1.add_movie_to_watchlist(5)
-        # account1.add_movie_to_watchlist(2)
+        account1.add_movie_to_watchlist(19)
+        account1.add_movie_to_watchlist(20)
+        
+        account1.update_movie_timestamp(19,"1:30:56")
+        
+        account1.resume_movie(25)
+        account1.resume_movie(19)
+        
+        account1.rate_movie(20,"I like this")
+        account1.rate_movie(29,"Not for me")
         # account2.add_movie_to_watchlist(13)
         # account2.add_movie_to_watchlist(3)
         # print(account1.get_user_recommendation())
@@ -614,7 +659,7 @@ if __name__ == "__main__":
         # account1.delete_movie_from_wishlist(4)
         # account1.delete_movie_from_wishlist(5)
 
-        # account1.logout_profile()    
+        account1.logout_profile()    
               
 
         
@@ -630,7 +675,7 @@ if __name__ == "__main__":
         # # account1.delete_account()
         # account1.create_profile("avni", "6969")
         # account1.login_profile("avni", "6969")
-        # logout(account1)
+        logout(account1)
         # logout(account2)
         
         # logout(account3)
