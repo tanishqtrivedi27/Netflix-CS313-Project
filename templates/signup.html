@@ -13,10 +13,10 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
         }
         #content {
-            max-width: 500px;
+            max-width: 300px;
             margin: 0 auto;
             background-color: #fff;
-            padding: 20px  50px 50px;
+            padding: 20px 30px 40px 30px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             position: absolute;
@@ -30,18 +30,6 @@
             color: #E50914;
         }
         form {
-            max-width: 300px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-        h2 {
-            color: #333;
-        }
-        label {
-            display: block;
             text-align: left;
             margin: 10px 0;
         }
@@ -71,7 +59,7 @@
     <div id='content'>
     {{msg}}
     <h1>NETFLIX</h1>
-    <h2>Signup to Netflix</h2>
+    <h2>Sign Up</h2>
     <form method="POST" action="/signup">
         <label for="email">Email:</label>
         <input type="email" name="email" id="email" required>
