@@ -155,6 +155,23 @@ def create_revenue_table(db):
         revenue int not null
     """
     db.create_table("revenue", columns)
+    
+def create_net_revenue_table(db):
+    columns = """
+        month varchar(255) not null check(month in ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')),
+        year int not null check(year>=2000 and year <=3000),
+        revenue int not null
+    """
+    db.create_table("net_revenue", columns)
+    
+def create_movie_deals(db):
+    columns = """
+    deal_no SERIAL PRIMARY KEY,
+    production_house_id int,
+    movie_id int REFERENCES movie(movie_id) on delete cascade,
+    price int    
+    """
+    db.create_table("movie_deals", columns)
 
 def create_database():
     conn = psycopg2.connect(
@@ -188,18 +205,15 @@ if __name__ == "__main__":
     create_profile_table(db)
     create_subscription_tiers_table(db)
     create_billing_table(db)
-    # create_invoice_table(db)
     create_session_table(db)
     create_actor_table(db)
     create_director_table(db)
     create_genre_table(db)
     create_movie_table(db)
-    
     create_watchlist_table(db)
-    # create_interaction_table(db)
     create_wishlist_table(db)
-    # create_employee_table(db)
-    # create_sales_table(db)
     create_revenue_table(db)
+    create_net_revenue_table(db)
+    create_movie_deals(db)
 
     db.commit_and_close()

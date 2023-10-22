@@ -5,6 +5,7 @@ import numpy as np
 from datetime import datetime
 import redis
 from dateutil.relativedelta import relativedelta
+import random
 
 
 class UserQueries:
@@ -40,10 +41,46 @@ class MovieQueries:
     def __init__(self, db):
         self.db = db
 
-    def create_movie(self, title, genre_id, description, release_date, actor_id, director_id):
-        query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES (\'{title}\', {genre_id}, \'{description}\', \'{release_date}\', {actor_id}, {director_id});'
+    def create_movie(self, title, genre_id, description, release_date, actor_id, director_id, prod_id, price):
+        query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES (\'{title}\', {genre_id}, \'{description}\', \'{release_date}\', {actor_id}, {director_id}) RETURNING movie_id;'
         self.db.execute_query(query)
-        print("MOVIE ADDED!")
+        mid = self.db.fetch_one()[0]
+        
+        # self.db.commit()
+        
+        # TRANSACTION 2
+        query2 = f'INSERT INTO movie_deals (production_house_id,movie_id, price) VALUES ({prod_id},{mid},{price});'
+        self.db.execute_query(query2)
+        
+        query4 = f'SELECT revenue FROM REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
+        self.db.execute_query(query4)
+        res4 = self.db.fetch_one()
+        res4 = 0 if (res4 is None) else res4[0]
+            
+        query5 = f'SELECT revenue FROM NET_REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
+        self.db.execute_query(query5)
+        res5 = self.db.fetch_one()
+        res5 = 0 if (res5 is None) else res5[0]
+        
+        if(res5 == 0):
+            query6 = f'INSERT INTO NET_REVENUE VALUES(\'{datetime.now().strftime("%b")}\',{datetime.now().strftime("%Y")},{res4 -price});'
+            
+        else:
+            query6 = f'UPDATE NET_REVENUE SET revenue = {res5 - price} WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
+        
+        self.db.execute_query(query6)
+        
+        prob = random.random()
+        print("probablity of SOMETHING: ", prob)
+        if (prob > 0.5):
+            print("TRANSACTION FAILED")
+            self.db.rollback()
+        else:
+            print("TRANSACTION SUCCESFUL")
+            self.db.commit()
+            print("MOVIE ADDED!")
+            
+        self.db.commit()
         return 
 
     def get_movie_by_movieid(self, movie_id):
@@ -55,6 +92,8 @@ class MovieQueries:
         query = f'delete FROM movie WHERE movie_id = {movie_id};'
         self.db.execute_query(query)
         print("DELETED MOVIE!")
+        
+    
 
 class Account:
     def __init__(self, account_id):
@@ -65,9 +104,6 @@ class Account:
         self._db_host = config('DB_HOST')
         self._db_port = config('DB_PORT')
         self.redisdb = RedisDB()
-        
-        
-        
         self.db = Database(self._db_name, self._db_user, self._db_password, self._db_host, self._db_port)
 
         self.account_id = account_id
@@ -167,7 +203,7 @@ class Account:
                     self.redisdb.incr_num_devices(self.account_id,1)
                 # query1 = f'INSERT INTO '
             else:
-                print("No such profile name or password")
+                print("No such profile name or password") 
     
     def logout_profile(self):
         if(self._check_profilelogin()):
@@ -345,8 +381,8 @@ class Account:
                 query3 = f'INSERT INTO REVENUE (MONTH, year, revenue) VALUES (\'{datetime.now().strftime("%b")}\', {datetime.now().strftime("%Y")}, {x[2]});'
                 self.db.execute_query(query3)
 
-            prob = np.abs(np.random.randn())
-            print(str(prob)+" - Probability of BANK TRANSACTION FAILURE")
+            prob = random.random()
+            print(str(prob)+" - BANK TRANSACTION PROB")
             if(prob > 0.9):
                 self.db.rollback()
                 print("TRANSACTION FAILED")
@@ -460,7 +496,7 @@ def logout(account: Account):
     print("Logout account")
     account.logout()
     del account
-    
+
 class RedisDB:
     def __init__(self):
         self._dbhost = config('REDIS_HOST')
@@ -497,46 +533,46 @@ if __name__ == "__main__":
     # Create a account
     
     
-    # db_name = config('DB_NAME')
-    # db_user = config('DB_USER')
-    # db_password = config('DB_PASSWORD')
-    # db_host = config('DB_HOST')
-    # db_port = config('DB_PORT')
+    db_name = config('DB_NAME')
+    db_user = config('DB_USER')
+    db_password = config('DB_PASSWORD')
+    db_host = config('DB_HOST')
+    db_port = config('DB_PORT')
 
-    # db = Database(db_name, db_user, db_password, db_host, db_port)
+    db = Database(db_name, db_user, db_password, db_host, db_port)
     
-    # mv = MovieQueries(db)
+    mv = MovieQueries(db)
     
-    # mv.create_movie("Matrix",1,"ABC",datetime.today(),1,2)
-    # mv.create_movie("Inception",2,"LOLOLOLOLOLO",datetime.today(),2,2)
+    mv.create_movie("sarrix",1,"ABC",datetime.today(),1,1, 1, 1000)
+    mv.create_movie("Inception",1,"LOLOLOLOLOLO",datetime.today(),1,1, 1, 4000)
     # mv.create_movie("Batman",1,"afdsv",datetime.today(),1,1)
     # mv.create_movie("Joy",1,"xdbxre",datetime.today(),2,1)
     # mv.create_movie("Her",1,"vjnzsik",datetime.today(),1,1)
     
-    # db.commit_and_close()
+    db.commit_and_close()
     # Log in
     
-    signup("tanishq.trivedi27@gmail.com", "123456")
-    signup("vivekpillai@gmail.com", "12345")
+    # signup("tanishq.trivedi27@gmail.com", "123456")
+    # signup("vivekpillai@gmail.com", "12345")
     
-    account1 = login("tanishq.trivedi27@gmail.com", "123456")
-    account2 = login("vivekpillai@gmail.com", "12345")
+    # account1 = login("tanishq.trivedi27@gmail.com", "123456")
+    # account2 = login("vivekpillai@gmail.com", "12345")
     # account3 = login("tanishq.trivedi27@gmail.com", "123456")
     # account4 = login("tanishq.trivedi27@gmail.com", "123456")
     
     # Add a movie to the watchlist
-    if (account1 is not None):
+    # if (account1 is not None):
         
-        account1.payment_subscription('Standard','UPI')
+        # account1.payment_subscription('Standard','UPI')
         
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
+        # account1.create_profile("tanishq", "1111")
+        # account1.login_profile("tanishq", "1111")
         
         
-        account2.payment_subscription('Premium','Cash')
+        # account2.payment_subscription('Premium','Cash')
         # account1.logout_profile()
-        account2.create_profile("pillai", "1111")
-        account2.login_profile("pillai", "1111")
+        # account2.create_profile("pillai", "1111")
+        # account2.login_profile("pillai", "1111")
         
         # # account2.delete_account_profile()
         
@@ -578,12 +614,12 @@ if __name__ == "__main__":
         # account1.delete_movie_from_wishlist(4)
         # account1.delete_movie_from_wishlist(5)
 
-        account1.logout_profile()    
+        # account1.logout_profile()    
               
 
         
         
-        account2.logout_profile()
+        # account2.logout_profile()
         
         # account3.logout_profile()    
         
@@ -594,8 +630,8 @@ if __name__ == "__main__":
         # # account1.delete_account()
         # account1.create_profile("avni", "6969")
         # account1.login_profile("avni", "6969")
-        logout(account1)
-        logout(account2)
+        # logout(account1)
+        # logout(account2)
         
         # logout(account3)
         
