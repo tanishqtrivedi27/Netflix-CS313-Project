@@ -42,7 +42,6 @@ class Account:
             self.db.execute_query(query2)
             self._get_devices = self.db.fetch_one()[3]
 
-
     def _check_profilelogin(self):
         if (self.profile_id is None):
             print("Login first")
@@ -77,8 +76,28 @@ class Account:
             self.db.commit()
             
     def login_profile(self, profile_name, profile_password):
+        
+        query = f'SELECT * from billing WHERE account_id = {self.account_id} AND expiration_date > DATE(NOW());'
+        self.db.execute_query(query)
+        resz = self.db.fetch_one()
+        if (resz is not None):
+            self._active_sub = True
+
+        # if (not self._active_sub):
+        #     print("Select a subscription and PAY!!!")
+
+        # query to find max num of devices allowed on subscription plan
+        # self._get_devices = 0
+        if (self._active_sub):
+            
+            tier_id = resz[3]
+            query2 = f'SELECT * from subscription_tiers WHERE tier_id = {tier_id};'
+            self.db.execute_query(query2)
+            self._get_devices = self.db.fetch_one()[3]
+        
         if (not self._active_sub):
             print("Buy a subscription plan.")
+            return
         
         if(self.redisdb.get_num_devices(self.account_id) >= self._get_devices):
             print("EXCEEDED NUMBER OF PERMITTED DEVICES")
@@ -288,10 +307,10 @@ class Account:
         if(subscription_tier in subscription_tiers):
             query = f'SELECT * from subscription_tiers where name =\'{subscription_tier}\';'
             self.db.execute_query(query)
-            kkkkk = self.db.fetch_one()[3]
             self.db.commit()
             
             x=self.db.fetch_one()
+            num_dev = x[3]
             sub_id = x[0]
             expiration_date = datetime.now().date()+relativedelta(days=30)
             
@@ -326,7 +345,7 @@ class Account:
                 print("TRANSACTION FAILED")
             else:
                 self._active_sub = True
-                self._get_devices = kkkkk
+                self._get_devices = num_dev
                 print("TRANSACTION SUCCESSFUL")
                 self.db.commit()
                 
@@ -373,7 +392,7 @@ class Account:
         self.db.execute_query(query)
         res = self.db.fetch_one()
         if(res is not None):
-            query1 = f'UPDATE watchlist SET rating = {rating} WHERE account_id ={self.account_id} and profile_id ={self.profile_id} and movie_id = {movie_id};'
+            query1 = f'UPDATE watchlist SET rating = \'{rating}\' WHERE account_id ={self.account_id} and profile_id ={self.profile_id} and movie_id = {movie_id};'
             self.db.execute_query(query1)
             print("RATED SUCCESSFULLY")
             self.db.commit()
@@ -473,12 +492,12 @@ def logout(account: Account):
 if __name__ == "__main__":
 
     signup("tanishq.trivedi27@gmail.com", "123456")
-    # signup("vivekpillai@gmail.com", "12345")
+    signup("vivekpillai@gmail.com", "12345")
     
     account1 = login("tanishq.trivedi27@gmail.com", "123456")
-    # account2 = login("vivekpillai@gmail.com", "12345")
-    # account3 = login("tanishq.trivedi27@gmail.com", "123456")
-    # account4 = login("tanishq.trivedi27@gmail.com", "123456")
+    account2 = login("vivekpillai@gmail.com", "12345")
+    account3 = login("vivekpillai@gmail.com", "12345")
+    account4 = login("vivekpillai@gmail.com", "12345")
     
     # Add a movie to the watchlist
     if (account1 is not None):
@@ -488,19 +507,18 @@ if __name__ == "__main__":
         account1.create_profile("tanishq", "1111")
         account1.login_profile("tanishq", "1111")
 
-        # account2.payment_subscription('Premium','Cash')
+        account2.payment_subscription('Standard','Cash')
         # account1.logout_profile()
-        # account2.create_profile("pillai", "1111")
-        # account2.login_profile("pillai", "1111")
+        account2.create_profile("pillai", "1111")
+        account2.login_profile("pillai", "1111")
         
         # # account2.delete_account_profile()
         
-        # account3.create_profile("muskan", "1111")
-        # account3.login_profile("muskan", "1111")
+        account3.create_profile("muskan", "1111")
+        account3.login_profile("muskan", "1111")
         
-        # account4.create_profile("gauri", "1111")
-        # account4.login_profile("gauri", "1111")
-        # account4.logout_profile()
+        account4.create_profile("gauri", "1111")
+        account4.login_profile("gauri", "1111")
         
         # account5 = login("tanishq.trivedi27@gmail.com", "123456")
         
@@ -513,8 +531,8 @@ if __name__ == "__main__":
         # account6.login_profile("manasvi", "1111")
         # account3.login_profile("pillai","lol")
         
-        # account1.update_movie_timestamp(2,"1:23:35")
-        # account1.update_movie_timestamp(10,"1:23:35")
+        account1.update_movie_timestamp(2,"1:23:35")
+        account1.update_movie_timestamp(10,"1:23:35")
         
         # account1.update_account_password("Kushal","123456")
         
@@ -546,23 +564,23 @@ if __name__ == "__main__":
 
         
         
-        # account2.logout_profile()
+        account2.logout_profile()
         
-        # account3.logout_profile()    
+        account3.logout_profile()    
         
         
         
-        # account5.logout_profile() 
+        account4.logout_profile() 
         # # account6.logout_profile() 
         # # account1.delete_account()
         # account1.create_profile("avni", "6969")
         # account1.login_profile("avni", "6969")
         logout(account1)
-        # logout(account2)
+        logout(account2)
         
-        # logout(account3)
+        logout(account3)
         
-        # logout(account4)
+        logout(account4)
         # logout(account5)
         # logout(account6)
         
