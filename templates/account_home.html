@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HOME PAGE</title>
+</head>
+<body>
+    <p> {{msg}}</p>
+    <ol>
+        <li>CREATE PROFILE</li>
+        <li>LOGIN PROFILE</li>
+        <li>PAYMENT</li>
+        <li>UPDATE ACCOUNT PASSWORD</li>
+        <li>DELETE ACCOUNT</li>
+        <li>LOGOUT ACCOUNT</li>
+    </ol>
+    
+    <h1>LOGIN PROFILE</h1>
+    <form method="POST" action="/profile_home">
+        <label for="text">Profile Name:</label>
+        <input type="text" name="name" id="name" required>
+        <br>
+        <label for="password">Profile Password:</label>
+        <input type="password" name="profile_password" id="profile_password" required>
+        <br>
+        <input type="submit" value="Login">
+    </form>
+
+    <h1>CREATE PROFILE</h1>
+    <form method="POST" action="/account_home">
+        <label for="text">Operation No.:</label>
+        <input type="text" name="op" id="op" required>
+        <br>
+        <label for="text">Profile Name:</label>
+        <input type="text" name="name" id="name" required>
+        <br>
+        <label for="password">Profile Password:</label>
+        <input type="password" name="profile_password" id="profile_password" required>
+        <br>
+        <input type="submit" value="submit">
+    </form>
+
+    <h1>PAYMENT PROFILE</h1>
+    <form method="POST" action="/account_home">
+        <label for="text">Subscription Type</label>
+        <input type="text" name="Subscription" id="Subscription" required>
+        <br>
+        <label for="text">Payment Mode:</label>
+        <input type="text" name="payment_mode" id="payment_mode" required>
+        <br>
+        <input type="submit" value="submit">
+    </form>
+
+    <h1>UPDATE ACCOUNT PASSWORD</h1>
+    <form method="POST" action="/account_home">
+        <label for="text">OLD PASSWORD</label>
+        <input type="text" name="old_pass" id="old_pass" required>
+        <br>
+        <label for="text">NEW PASSWORD</label>
+        <input type="text" name="new_pass" id="new_pass" required>
+        <br>
+        <input type="submit" value="submit">
+    </form>
+
+    <h1>DELETE and LOGOUT</h1>
+    <form method="POST" action="/account_home">
+        <label for="text">Operation No.:</label>
+        <input type="text" name="op" id="op" required>
+        <br>
+        <input type="submit" value="submit">
+    </form>
+
+
+</body>
+</html>

@@ -59,22 +59,25 @@ class Account:
         cnt2 = self.db.fetch_one()
         if(cnt2[0] !=0):
             print("PROFILE WITH SAME NAME EXISTS")
-            return
+            return {'err': 0, 'msg': "PROFILE WITH SAME NAME EXISTS"}
             
         if (cnt is not None):
             if(cnt[0] >= 6):
                 print("CANNOT ADD MORE PROFILES")
+                return {'err': 0,'msg': "CANNOT ADD MORE PROFILES"}
             else:        
                 query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
                 self.db.execute_query(query)
                 self.db.commit()
                 print(f'Profile Created for {profile_name}!')
+                return {'err': 1,'msg': f'Profile Created for {profile_name}! YOU CAN LOGIN NOW'}
         else: # first profile is getting created
             query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
             self.db.execute_query(query)
             print(f'Profile Created for {profile_name}!')
             self.db.commit()
-            
+            return {'err': 1,'msg': f'Profile Created for {profile_name}! YOU CAN LOGIN NOW'}
+          
     def login_profile(self, profile_name, profile_password):
         
         query = f'SELECT * from billing WHERE account_id = {self.account_id} AND expiration_date > DATE(NOW());'
@@ -83,11 +86,6 @@ class Account:
         if (resz is not None):
             self._active_sub = True
 
-        # if (not self._active_sub):
-        #     print("Select a subscription and PAY!!!")
-
-        # query to find max num of devices allowed on subscription plan
-        # self._get_devices = 0
         if (self._active_sub):
             
             tier_id = resz[3]
@@ -96,16 +94,13 @@ class Account:
             self._get_devices = self.db.fetch_one()[3]
         
         if (not self._active_sub):
-            print("Buy a subscription plan.")
-            return
+            return {'err': 0, 'msg': "Buy a subscription plan"}
         
         if(self.redisdb.get_num_devices(self.account_id) >= self._get_devices):
-            print("EXCEEDED NUMBER OF PERMITTED DEVICES")
-            return
+            return {'err': 0, 'msg': "Exceeded number of devices"}
         
         if(self.profile_id):
-            print("LOGOUT FROM PREVIOUS PROFILE")
-            return
+            return {'err': 0, 'msg': "Logout from previous profile"}
         
         query1 = f'SELECT count(*) FROM SESSION where account_id={self.account_id} ;'
         self.db.execute_query(query1)
@@ -125,23 +120,23 @@ class Account:
                     cnt_id = self.db.fetch_one()
                     
                     if(cnt_id[0] > 0 ):
-                        print("PROFILE ALREADY LOGGED IN ")
-                        return
+                        return {'err': 0, 'msg': "Profile already logged in"}
                     
                     self.profile_id = profileID[0]
                     query2 = f'INSERT INTO session (account_id, profile_id, start_time) values ({self.account_id}, {self.profile_id}, \'{datetime.now()}\');'
                     self.db.execute_query(query2)
-                    print("Succesfully logged in profile")
+                    
                     self.db.commit()
                     if(self.redisdb.get_num_devices(self.account_id)==0):
                         self.redisdb.set_num_devices(self.account_id)
                     else:
                         self.redisdb.incr_num_devices(self.account_id,1)
-                    # query1 = f'INSERT INTO '
+                    
+                    return {'err': 1, 'msg': 'Succesfully logged in profile'}
                 else:
-                    print("No such profile name or password")
+                    return {'err': 0, 'msg': "Wrong profile name or password"}
             else:
-                print("Exceeded number of sessions")
+                return {'err': 0, 'msg': "Exceeded number of devices"}
         else:
             query = f'SELECT * FROM PROFILE WHERE profile_name=\'{profile_name}\' and profile_password = \'{profile_password}\' AND account_id = {self.account_id};'
             self.db.execute_query(query)
@@ -150,15 +145,16 @@ class Account:
                 self.profile_id = profileID[0]
                 query2 = f'INSERT INTO session (account_id, profile_id, start_time) values ({self.account_id}, {self.profile_id}, \'{datetime.now()}\');'
                 self.db.execute_query(query2)
-                print("Succesfully logged in profile")
                 self.db.commit()
                 if(self.redisdb.get_num_devices(self.account_id)==0):
                         self.redisdb.set_num_devices(self.account_id)
                 else:
                     self.redisdb.incr_num_devices(self.account_id,1)
-                # query1 = f'INSERT INTO '
+                    
+                return {'err': 1, 'msg': 'Succesfully logged in profile'}
+            
             else:
-                print("No such profile name or password") 
+                return {'err': 0, 'msg': "Wrong profile name or password"}
     
     def logout_profile(self):
         if(self._check_profilelogin()):
@@ -168,9 +164,9 @@ class Account:
         self.db.execute_query(query1)
         self.db.commit()
         self.profile_id = None
-        print("SUCCesfully logged out profile")
+        print("Succesfully logged out profile")
         self.redisdb.incr_num_devices(self.account_id, -1)
-        return
+        return {'err': 1, 'msg': 'Succesfully logged out profile'}
         
     def add_movie_to_watchlist(self, movie_id):
         if(self._check_profilelogin()):
@@ -181,7 +177,7 @@ class Account:
         res1 = self.db.fetch_one()
         if(res1 is None):
             print("INVALID MOVIE ID")
-            return
+            return {'err': 0, 'msg': "INVALID MOVIE ID"}
         self.db.commit()
         cur_genre = res1[2]
         time_stamp = "00:00:00"
@@ -193,13 +189,14 @@ class Account:
         except Exception as e:
             print("MOVIE ALREADY PRESENT IN WATCHLIST")
             self.db.rollback()
-            return
+            return {'err': 0, 'msg': "MOVIE ALREADY PRESENT IN WATCHLIST"}
         # Movie updating recommendation
         query2 = f'SELECT title FROM MOVIE WHERE genre_id={cur_genre} LIMIT 5;'
         self.db.execute_query(query2)
         rec_movie = self.db.fetch_all()
         for i in rec_movie:
             self.redisdb.add_recommendation(self.account_id, self.profile_id, i[0])
+        return {'err': 1, 'msg': 'MOVIE ADDED TO WATCHLIST'}
             
     def add_movie_to_wishlist(self, movie_id):
         if(self._check_profilelogin()):
@@ -210,7 +207,7 @@ class Account:
         res1 = self.db.fetch_one()
         if(res1 is None):
             print("INVALID MOVIE ID")
-            return
+            return {'err': 0, 'msg': "INVALID MOVIE ID"}
         self.db.commit()
         try:
             query = f'INSERT INTO wishlist values ({self.account_id}, {self.profile_id}, {movie_id});'
@@ -220,7 +217,8 @@ class Account:
         except Exception as e:
             print("MOVIE ALREADY PRESENT IN WISHLIST")
             self.db.rollback()
-            return
+            return {'err': 0, 'msg': "MOVIE ALREADY PRESENT IN WISHLIST"}
+        return {'err': 1, 'msg': 'MOVIE ADDED TO WISHLIST'}
 
     def update_movie_timestamp(self, movie_id, timestamp):
         if(self._check_profilelogin()):
@@ -233,12 +231,13 @@ class Account:
         # print(res1)
         if(res1 is None):
             print("NO SUCH MOVIE IN WATCHLIST")
-            return
+            return  {'err': 0, 'msg': "NO SUCH MOVIE IN WATCHLIST"}
         
         query = f'UPDATE watchlist SET timestamp= \'{timestamp}\' WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
         self.db.execute_query(query)
         self.db.commit()
         print("MOVIE TIMESTAMP UPDATED")
+        return {'err': 1, 'msg': "MOVIE TIMESTAMP UPDATED"}
     
     def delete_movie_from_wishlist(self, movie_id):
         if(self._check_profilelogin()):
@@ -251,7 +250,7 @@ class Account:
         self.db.commit()
         if(res1 is None):
             print("INVALID MOVIE")
-            return
+            return {'err': 0, 'msg': 'INVALID MOVIE'}
         
         try:
             queryn = f'SELECT * FROM wishlist WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
@@ -259,7 +258,7 @@ class Account:
             resn = self.db.fetch_one()
             if(resn is None):
                 print("MOVIE NOT PRESENT IN WISHLIST")
-                return
+                return {'err': 0, 'msg': 'MOVIE NOT PRESENT IN WISHLIST'}
             
             query = f'DELETE FROM wishlist WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
             self.db.execute_query(query)
@@ -268,7 +267,8 @@ class Account:
         except Exception as e:
             print("MOVIE NOT PRESENT IN WISHLIST")
             self.db.rollback()
-            return
+            return {'err': 0, 'msg': 'MOVIE NOT PRESENT IN WISHLIST'}
+        return {'err': 1, 'msg': 'MOVIE DELETED FROM WISHLIST'}
 
     def update_account_password(self, old_password, new_password):
         query1 = f'SELECT * FROM account WHERE account_id = {self.account_id};'
@@ -278,11 +278,14 @@ class Account:
         if (old_password == old):
             query = f'update account SET password = \'{new_password}\' WHERE account_id = {self.account_id};'
             self.db.execute_query(query)
-            print(" UPDATED ACCOUNT PASSWORD SUCCESSFULLY")
+            print("UPDATED ACCOUNT PASSWORD SUCCESSFULLY")
+            self.db.commit()
+            return {'err':1,'msg':'UPDATED ACCOUNT PASSWORD SUCCESSFULLY'}
         else:
             print("OLD PASSWORD of ACCOUNT doesn't match")
             self.db.rollback()
-        self.db.commit()
+            return {'err':0,'msg':'OLD PASSWORD of ACCOUNT doesn\'t match'}
+        # self.db.commit()
         
     def update_profile_password(self, old_password, new_password):
         if(self._check_profilelogin()):
@@ -297,10 +300,12 @@ class Account:
             self.db.execute_query(query)
             print(" UPDATED PROFILE PASSWORD SUCCESSFULLY")
             self.db.commit()
+            return {'err':1,'msg':'UPDATED PROFILE PASSWORD SUCCESSFULLY'}
         else:
             print("OLD PROFILE PASSWORD doesn't match")
             self.db.rollback()
-        self.db.commit()
+            return {'err':0,'msg':'OLD PASSWORD of profile doesn\'t match'}
+        # self.db.commit()
     
     def payment_subscription(self,subscription_tier, payment_mode):
         subscription_tiers = ['Mobile','Basic','Standard','Premium']
@@ -320,7 +325,7 @@ class Account:
             
             if(resz is not None):
                 print("SUBSCRIPTION ALREADY PURCHASED FOR CURRENT MONTH")
-                return                
+                return {'err':0, 'msg':'SUBSCRIPTION ALREADY PURCHASED FOR CURRENT MONTH'}              
             
             query1 = f'INSERT INTO billing (account_id, payment_mode,subscription_type, billing_date, expiration_date) VALUES ({self.account_id},\'{payment_mode}\',{sub_id},\'{datetime.now().date()}\',\'{expiration_date}\');'
             self.db.execute_query(query1)
@@ -343,15 +348,17 @@ class Account:
             if(prob > 0.9):
                 self.db.rollback()
                 print("TRANSACTION FAILED")
+                return {'err':0, 'msg':'TRANSACTION FAILED! TRY AGAIN FOR PAYMENT'}
             else:
                 self._active_sub = True
                 self._get_devices = num_dev
                 print("TRANSACTION SUCCESSFUL")
                 self.db.commit()
-                
-            self.db.commit()
+                return {'err':1, 'msg':'TRANSACTION SUCCESSFUL! YOU CAN LOGIN TO A PROFILE'}
+
         else:
             print("SUBSCRIPTION TIER IS NOT MATCHING")
+            return {'err':0, 'msg':'SUBSCRIPTION TIER IS NOT MATCHING'}
             
     def get_user_recommendation(self):
         if(self._check_profilelogin()):
@@ -363,9 +370,11 @@ class Account:
             self.db.execute_query(query2)
             rec_movie = self.db.fetch_all()
             rec_ls = [i[0] for i in rec_movie]
-            return rec_ls
+            rec_ls_1 = ', '.join(rec_ls)
+            return {'err':1,'msg':rec_ls_1}
         else:
-            return rec_movies
+            rec_movie_1 = ', '.join(rec_movies)
+            return {'err':1,'msg':rec_movie_1}
                
     def resume_movie(self,movie_id):
         if(self._check_profilelogin()):
@@ -376,18 +385,20 @@ class Account:
         if(res is not None):
             print("MOVIE RESUMED FROM TIMESTAMP", res[4])
             self.db.commit()
-            return res[4]
+            return {'err':1, 'msg':f'MOVIE RESUMED FROM TIMESTAMP {res[4]}'}
         else:
+            self.db.rollback()
             print("YOU HAVE NOT WATCHED THE MOVIE YET")
+            return {'err':0, 'msg':f'YOU HAVE NOT WATCHED THE MOVIE YET'}
         self.db.commit()
         
     def rate_movie(self,movie_id,rating):
         poss_rat = ['Not for me', 'I like this', 'Love this']
         if(rating not in poss_rat):
             print("INVALID RATING")
-            return
+            return {'err': 0, 'msg': "INVALID RATING"}
         if(self._check_profilelogin()):
-            return
+            return {'err': 0, 'msg': "LOGIN FIRST"}
         query = f'SELECT * FROM WATCHLIST WHERE account_id ={self.account_id} and profile_id ={self.profile_id} and movie_id = {movie_id};'
         self.db.execute_query(query)
         res = self.db.fetch_one()
@@ -396,9 +407,12 @@ class Account:
             self.db.execute_query(query1)
             print("RATED SUCCESSFULLY")
             self.db.commit()
+            return {'err': 1,'msg': "RATED SUCCESSFULLY"}
         else:
+            self.db.rollback()
             print("YOU HAVE NOT WATCHED THE MOVIE YET")
-        self.db.commit()
+            return {'err': 0,'msg': "YOU HAVE NOT WATCHED THE MOVIE YET"}
+        # self.db.commit()
                   
     def delete_account_profile(self):
         if(self._check_profilelogin()):
@@ -410,9 +424,8 @@ class Account:
         query = f'delete FROM profile WHERE account_id={self.account_id} and profile_id = {pid};'
         self.db.execute_query(query)
         print("DELETED profile SUCCESSFULLY!")
-        
-        
         self.db.commit()
+        return {'err':1, 'msg':f'DELETED profile SUCCESSFULLY!'}
         
     def delete_account(self):
         query = f'DELETE FROM account WHERE account_id = {self.account_id};'
@@ -420,6 +433,7 @@ class Account:
         self.db.commit()
         self.logout()
         print("ACCOUNT DELETED SUCCESSFULLY")
+        return {'err':1, 'msg':f'DELETED ACCOUNT SUCCESSFULLY!'}
                  
     def logout(self):
         self.db.commit_and_close()
@@ -487,7 +501,7 @@ def login(email, password) -> Account or None:
 def logout(account: Account):
     print("Logout account")
     account.logout()
-    del account
+    # del account
         
 if __name__ == "__main__":
 

@@ -68,3 +68,4 @@ class Database:
         self.conn.commit()
         self.cur.close()
         self.conn.close()
+        
