@@ -454,11 +454,13 @@ def signup(email, password):
             db.execute_query(query)
             if(db.fetch_all()):
                 print("ACCOUNT ALREADY EXISTS!")
+                return {'msg': 'Account ALREADY EXISTS'}
             else:
                 query1 = f'INSERT INTO account (EMAIL, PASSWORD) VALUES(\'{email}\', \'{password}\');'
                 db.execute_query(query1)
                 print("ACCOUNT CREATED! YOU CAN LOGIN NOW")
                 db.commit()
+                return {'msg': 'Account successfully created'}
         except Exception as e:
             print("USER SIGN-UP FAILED")
             db.rollback()

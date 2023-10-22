@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, session, render_template, redirect, url_for
 import time
 from flask_session import Session
-from query import Account,login,logout
+from query import Account,login,logout,signup
 
 
 app = Flask(__name__)
@@ -14,7 +14,19 @@ accounts = {}
 
 @app.route('/',methods=['GET', 'POST'])
 def home():
-    return render_template("login.html")
+    msg = request.args.get('msg', default='', type=str)  # Retrieve the 'msg' argument if provided
+
+    return render_template("login.html", msg=msg)
+
+@app.route('/signup',methods=['POST','GET'])
+def sign_up():
+    if(request.method == 'POST'):
+        email = request.form['email']
+        password = request.form['password']
+        x = signup(email,password)
+        return redirect(url_for('home', msg=x['msg']))      
+    return render_template('signup.html')
+        
 
 @app.route('/account_home',  methods=['GET', 'POST'])
 def account_home():
@@ -31,7 +43,8 @@ def account_home():
             acc_name = f'account_{i}'
             temp_account = login(email,password)
             if(temp_account is None):
-                return "Wrong Email or Wrong Password"
+                mssg =  "Wrong Email or Wrong Password"
+                return redirect(url_for('home', msg=mssg))   
             
             accounts[acc_name] = temp_account
             i+=1
