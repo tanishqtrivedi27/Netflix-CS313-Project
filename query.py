@@ -43,7 +43,7 @@ class MovieQueries:
         query = f'INSERT INTO movie (title, genre_id, description, release_date, actor_id, director_id) VALUES (\'{title}\', {genre_id}, \'{description}\', \'{release_date}\', {actor_id}, {director_id});'
         self.db.execute_query(query)
         print("MOVIE ADDED!")
-        return self.db.fetch_one()
+        return 
 
     def get_movie_by_movieid(self, movie_id):
         query = f'SELECT * FROM movie WHERE movie_id = {movie_id};'
@@ -66,6 +66,7 @@ class Account:
         self.redisdb = RedisDB()
         
         
+        
         self.db = Database(self._db_name, self._db_user, self._db_password, self._db_host, self._db_port)
 
         self.account_id = account_id
@@ -79,12 +80,12 @@ class Account:
         return False
         
     def create_profile(self, profile_name, profile_password):
-        query1 = f'SELECT count(*) from profile WHERE account_id = {self.account_id}';
+        query1 = f'SELECT count(*) from profile WHERE account_id = {self.account_id};'
         self.db.execute_query(query1)
         cnt = self.db.fetch_one()
         
         query3 = f'SELECT count(*) from profile WHERE account_id = {self.account_id} and profile_name=\'{profile_name}\';'
-        self.db.execute_query(query3);
+        self.db.execute_query(query3)
         cnt2 = self.db.fetch_one()
         if(cnt2[0] !=0):
             print("PROFILE WITH SAME NAME EXISTS")
@@ -104,8 +105,15 @@ class Account:
             print(f'Profile Created for {profile_name}!')
             self.db.commit()
             
-    
     def login_profile(self, profile_name, profile_password):
+        
+        if(self.redisdb.get_num_devices(self.account_id)>=4):
+            print("EXCEEDED NUMBER OF PERMITTED DEVICES")
+            return
+        
+        if(self.profile_id):
+            print("LOGOUT FROM PREVIOUS PROFILE")
+            return
         
         query1 = f'SELECT count(*) FROM SESSION where account_id={self.account_id} ;'
         self.db.execute_query(query1)
@@ -133,6 +141,10 @@ class Account:
                     self.db.execute_query(query2)
                     print("Succesfully logged in profile")
                     self.db.commit()
+                    if(self.redisdb.get_num_devices(self.account_id)==0):
+                        self.redisdb.set_num_devices(self.account_id)
+                    else:
+                        self.redisdb.incr_num_devices(self.account_id,1)
                     # query1 = f'INSERT INTO '
                 else:
                     print("No such profile name or password")
@@ -148,6 +160,10 @@ class Account:
                 self.db.execute_query(query2)
                 print("Succesfully logged in profile")
                 self.db.commit()
+                if(self.redisdb.get_num_devices(self.account_id)==0):
+                        self.redisdb.set_num_devices(self.account_id)
+                else:
+                    self.redisdb.incr_num_devices(self.account_id,1)
                 # query1 = f'INSERT INTO '
             else:
                 print("No such profile name or password")
@@ -161,56 +177,75 @@ class Account:
         self.db.commit()
         self.profile_id = None
         print("SUCCesfully logged out profile")
+        self.redisdb.incr_num_devices(self.account_id, -1)
+        return
         
     def add_movie_to_watchlist(self, movie_id):
         if(self._check_profilelogin()):
             return
-        
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
-        # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
-        cur_genre = res1[2]
-        print(res1)
-        time_stamp = "00:00:00"
-        query = f'INSERT INTO watchlist values ({self.account_id}, {self.profile_id}, {movie_id}, NULL, \'{time_stamp}\');'
-        self.db.execute_query(query)
+        if(res1 is None):
+            print("INVALID MOVIE ID")
+            return
         self.db.commit()
-        
+        cur_genre = res1[2]
+        time_stamp = "00:00:00"
+        try:
+            query = f'INSERT INTO watchlist values ({self.account_id}, {self.profile_id}, {movie_id}, NULL, \'{time_stamp}\');'
+            self.db.execute_query(query)
+            self.db.commit()
+            print("MOVIE ADDED TO WATCHLIST")
+        except Exception as e:
+            print("MOVIE ALREADY PRESENT IN WATCHLIST")
+            self.db.rollback()
+            return
+        # Movie updating recommendation
         query2 = f'SELECT title FROM MOVIE WHERE genre_id={cur_genre} LIMIT 5;'
         self.db.execute_query(query2)
         rec_movie = self.db.fetch_all()
         for i in rec_movie:
-            self.redisdb.add_recommendation(self.account_id, self.profile_id, i)
+            self.redisdb.add_recommendation(self.account_id, self.profile_id, i[0])
             
-        
-        # 
-    
     def add_movie_to_wishlist(self, movie_id):
         if(self._check_profilelogin()):
             return
 
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
-        # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
-        print(res1)
-        query = f'INSERT INTO wishlist values ({self.account_id}, {self.profile_id}, {movie_id});'
-        self.db.execute_query(query)
+        if(res1 is None):
+            print("INVALID MOVIE ID")
+            return
         self.db.commit()
+        try:
+            query = f'INSERT INTO wishlist values ({self.account_id}, {self.profile_id}, {movie_id});'
+            self.db.execute_query(query)
+            self.db.commit()
+            print("MOVIE ADDED TO WISHLIST")
+        except Exception as e:
+            print("MOVIE ALREADY PRESENT IN WISHLIST")
+            self.db.rollback()
+            return
 
     def update_movie_timestamp(self, movie_id, timestamp):
         if(self._check_profilelogin()):
             return
         
-        query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
+        query1 = f'SELECT * FROM watchlist WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
         # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
-        print(res1)
+        # print(res1)
+        if(res1 is None):
+            print("NO SUCH MOVIE IN WATCHLIST")
+            return
+        
         query = f'UPDATE watchlist SET timestamp= \'{timestamp}\' WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
         self.db.execute_query(query)
         self.db.commit()
+        print("MOVIE TIMESTAMP UPDATED")
     
     def delete_movie_from_wishlist(self, movie_id):
         if(self._check_profilelogin()):
@@ -220,22 +255,58 @@ class Account:
         # data1 = (movie_id)
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
-        print(res1)
-        query = f'DELETE FROM wishlist WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
-        self.db.execute_query(query)
         self.db.commit()
+        if(res1 is None):
+            print("INVALID MOVIE")
+            return
+        
+        try:
+            queryn = f'SELECT * FROM wishlist WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
+            self.db.execute_query(queryn)
+            resn = self.db.fetch_one()
+            if(resn is None):
+                print("MOVIE NOT PRESENT IN WISHLIST")
+                return
+            
+            query = f'DELETE FROM wishlist WHERE (account_id, profile_id, MOVIE_id) = ({self.account_id}, {self.profile_id}, {movie_id});'
+            self.db.execute_query(query)
+            self.db.commit()
+            print("MOVIE DELETED FROM WISHLIST")
+        except Exception as e:
+            print("MOVIE NOT PRESENT IN WISHLIST")
+            self.db.rollback()
+            return
 
     def update_account_password(self, old_password, new_password):
         query1 = f'SELECT * FROM account WHERE account_id = {self.account_id};'
-        self.db.execute_query(query1);
+        self.db.execute_query(query1)
         old = self.db.fetch_all()[0][1]
         
         if (old_password == old):
             query = f'update account SET password = \'{new_password}\' WHERE account_id = {self.account_id};'
             self.db.execute_query(query)
-            print(" UPDATED SUCCESSFULLY")
+            print(" UPDATED ACCOUNT PASSWORD SUCCESSFULLY")
         else:
-            print("OLD PASSWORD doesn't match")
+            print("OLD PASSWORD of ACCOUNT doesn't match")
+            self.db.rollback()
+        self.db.commit()
+        
+    def update_profile_password(self, old_password, new_password):
+        if(self._check_profilelogin()):
+            return
+        
+        query1 = f'SELECT * FROM profile WHERE account_id = {self.account_id} and profile_id ={self.profile_id};'
+        self.db.execute_query(query1)
+        old = self.db.fetch_all()[0][3]
+        
+        if (old_password == old):
+            query = f'update profile SET profile_password = \'{new_password}\' WHERE account_id = {self.account_id} and profile_id = {self.profile_id};'
+            self.db.execute_query(query)
+            print(" UPDATED PROFILE PASSWORD SUCCESSFULLY")
+            self.db.commit()
+        else:
+            print("OLD PROFILE PASSWORD doesn't match")
+            self.db.rollback()
         self.db.commit()
     
     def payment_subscription(self,subscription_tier, payment_mode):
@@ -271,7 +342,8 @@ class Account:
             query2 = f'SELECT title FROM MOVIE LIMIT 5;'
             self.db.execute_query(query2)
             rec_movie = self.db.fetch_all()
-            return rec_movie
+            rec_ls = [i[0] for i in rec_movie]
+            return rec_ls
         else:
             return rec_movies
                   
@@ -279,11 +351,14 @@ class Account:
         if(self._check_profilelogin()):
             return
         
-        query = f'delete FROM profile WHERE account_id={self.account_id} and profile_id = {self.profile_id};'
+        pid = self.profile_id
+        self.logout_profile()
+        
+        query = f'delete FROM profile WHERE account_id={self.account_id} and profile_id = {pid};'
         self.db.execute_query(query)
         print("DELETED profile SUCCESSFULLY!")
         
-        self.logout_profile()
+        
         self.db.commit()
         
     def delete_account(self):
@@ -291,6 +366,8 @@ class Account:
         self.db.execute_query(query)
         self.db.commit()
         self.logout()
+        print("ACCOUNT DELETED SUCCESSFULLY")
+        
                 
     def logout(self):
         self.db.commit_and_close()
@@ -371,56 +448,137 @@ class RedisDB:
         
     def add_recommendation(self,user_id,profile_id,movie):
         name = str(user_id) + "_"+ str(profile_id)
-        self.r.rpush(name,movie)
+        self.r.sadd(name,movie)
         
     def get_recommendation(self,user_id, profile_id):
         name = str(user_id) + "_"+ str(profile_id)
-        rec_list = self.r.lrange(name, 0,5)
-        return rec_list
+        rec_list = self.r.smembers(name)
+        list_rec = [i.decode("utf-8") for i in list(rec_list)]
+        return list_rec[-5:]
     
+    def get_num_devices(self,user_id):
+        if (self.r.hget('num_devices',user_id) is None):
+            return 0
+        else:
+            return int((self.r.hget('num_devices',user_id).decode("utf-8"))) 
+    
+    def incr_num_devices(self,user_id,incr):
+        if(self.get_num_devices(user_id)==0 and incr == -1):
+            return
+        self.r.hincrby('num_devices',user_id,incr)
+        return
+    
+    def set_num_devices(self,user_id):
+        # if(self.get_num_devices(user_id)==0):
+    
+        self.r.hset('num_devices',user_id,1)    
+            # return
+        # self.r.hset('num_devices',user_id,self.get_num_devices(user_id)+1)
+        
+        
 
 # Example usage:
 if __name__ == "__main__":
     # Create a account
-    signup("tanishq.trivedi27@gmail.com", "123456")
-    signup("ivivekpilla@gmail.com", "12345")
     
-    # mv = MovieQueries()
+    
+    # db_name = config('DB_NAME')
+    # db_user = config('DB_USER')
+    # db_password = config('DB_PASSWORD')
+    # db_host = config('DB_HOST')
+    # db_port = config('DB_PORT')
+
+    # db = Database(db_name, db_user, db_password, db_host, db_port)
+    
+    # mv = MovieQueries(db)
+    
+    # mv.create_movie("Matrix",1,"ABC",datetime.today(),1,2)
+    # mv.create_movie("Inception",2,"LOLOLOLOLOLO",datetime.today(),2,2)
+    # mv.create_movie("Batman",1,"afdsv",datetime.today(),1,1)
+    # mv.create_movie("Joy",1,"xdbxre",datetime.today(),2,1)
+    # mv.create_movie("Her",1,"vjnzsik",datetime.today(),1,1)
+    
+    # db.commit_and_close()
     # Log in
+    
+    signup("tanishq.trivedi27@gmail.com", "123456")
+    signup("vivekpillai@gmail.com", "12345")
+    
     account1 = login("tanishq.trivedi27@gmail.com", "123456")
-    account2 = login("ivivekpilla@gmail.com", "12345")
-
+    account2 = login("tanishq.trivedi27@gmail.com", "123456")
+    account3 = login("tanishq.trivedi27@gmail.com", "123456")
+    account4 = login("tanishq.trivedi27@gmail.com", "123456")
+    
     # Add a movie to the watchlist
-    # if ():
-    account1.create_profile("tanishq", "1111")
-    account1.login_profile("tanishq", "1111")
-    # account1.logout_profile()
-    account2.create_profile("pilla", "1111")
-    account2.login_profile("pilla", "1111")
-    
-    account1.create_profile("tanishq", "1111")
-    account1.login_profile("tanishq", "1111")
-    account1.logout_profile()
-    
-    account1.create_profile("pilla", "1111")
-    account1.login_profile("pilla", "1111")
+    if (account1 is not None):
+        account1.create_profile("tanishq", "1111")
+        account1.login_profile("tanishq", "1111")
+        # account1.logout_profile()
+        account2.create_profile("pillai", "1111")
+        account2.login_profile("pillai", "1111")
+        
+        # account2.delete_account_profile()
+        
+        account3.create_profile("muskan", "1111")
+        account3.login_profile("muskan", "1111")
+        
+        account4.create_profile("gauri", "1111")
+        account4.login_profile("gauri", "1111")
+        account4.logout_profile()
+        
+        account5 = login("tanishq.trivedi27@gmail.com", "123456")
+        
+        account5.create_profile("mokshita", "1111")
+        account5.login_profile("mokshita", "1111")
+        
+        # account6 = login("tanishq.trivedi27@gmail.com", "123456")
+        
+        # account6.create_profile("manasvi", "1111")
+        # account6.login_profile("manasvi", "1111")
+        # account3.login_profile("pillai","lol")
+        
+        # account1.update_movie_timestamp(2,"1:23:35")
+        # account1.update_movie_timestamp(10,"1:23:35")
+        
+        # account1.update_account_password("Kushal","123456")
+        
+        
+        # account1.add_movie_to_watchlist(5)
+        # account1.add_movie_to_watchlist(2)
+        # account2.add_movie_to_watchlist(13)
+        # account2.add_movie_to_watchlist(3)
+        # print(account1.get_user_recommendation())
+        # print(account2.get_user_recommendation())
+        # account2.update_profile_password("lol","lol")
+        
+        # account1.add_movie_to_wishlist(4)
+        # account1.add_movie_to_wishlist(3)
+        # account1.add_movie_to_wishlist(4)
+        # account1.delete_movie_from_wishlist(4)
+        # account1.delete_movie_from_wishlist(5)
 
-    account1.logout_profile()
+        account1.logout_profile()    
+        
+        account2.logout_profile()
+        
+        account3.logout_profile()    
+        
+        
+        
+        account5.logout_profile() 
+        # account6.logout_profile() 
+        # account1.delete_account()
+        # account1.create_profile("avni", "6969")
+        # account1.login_profile("avni", "6969")
+        
 
-    account1.create_profile("tanishq", "1111")
-    # account1.login_profile("tanishq", "1111")
-    account1.logout_profile()
-    
-
-    account1.create_profile("tanishq", "1111")
-    # account1.login_profile("tanishq", "1111")
-    account1.logout_profile()
-
-    
-    # account1.create_profile("vivek", "1111")
-    account1.login_profile("arun", "1111")
-    # account1.logout_profile()
-    # account1.add_movie_to_watchlist(11)
-    # account1.update_movie_timestamp(11, "1:22:45")
-
-    logout(account1)
+        logout(account1)
+        
+        logout(account2)
+        
+        logout(account3)
+        
+        logout(account4)
+        logout(account5)
+        # logout(account6)
+        

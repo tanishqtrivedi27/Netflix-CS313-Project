@@ -57,7 +57,7 @@ def create_profile_table(db):
 def create_billing_table(db):
     columns = """
         billing_id SERIAL PRIMARY KEY,
-        account_id INT REFERENCES account(account_id),
+        account_id INT REFERENCES account(account_id) on delete cascade,
         payment_mode VARCHAR(255) NOT NULL,
         subscription_type INT REFERENCES subscription_tiers(tier_id),
         billing_date TIMESTAMP NOT NULL,
@@ -79,8 +79,8 @@ def create_billing_table(db):
 def create_session_table(db):
     columns = """
         session_id SERIAL PRIMARY KEY,
-        account_id INT REFERENCES account(account_id),
-        profile_id INT REFERENCES profile(profile_id),
+        account_id INT REFERENCES account(account_id) on delete cascade,
+        profile_id INT REFERENCES profile(profile_id) on delete cascade,
         start_time TIMESTAMP,
         end_time TIMESTAMP
     """
@@ -130,9 +130,9 @@ def create_genre_table(db):
 
 def create_watchlist_table(db):
     columns = """
-        account_id INT REFERENCES account(account_id),
-        profile_id INT REFERENCES profile(profile_id),
-        movie_id INT REFERENCES movie(movie_id),
+        account_id INT REFERENCES account(account_id) on delete cascade,
+        profile_id INT REFERENCES profile(profile_id) on delete cascade,
+        movie_id INT REFERENCES movie(movie_id) on delete cascade,
         rating VARCHAR(255) CHECK (rating IN ('Not for me', 'I like this', 'Love this')),
         timestamp TIME,
         PRIMARY KEY (account_id, profile_id, movie_id)
@@ -141,9 +141,9 @@ def create_watchlist_table(db):
 
 def create_wishlist_table(db):
     columns = """
-        account_id INT REFERENCES account(account_id),
-        profile_id INT REFERENCES profile(profile_id),
-        movie_id INT REFERENCES movie(movie_id),
+        account_id INT REFERENCES account(account_id) on delete cascade,
+        profile_id INT REFERENCES profile(profile_id) on delete cascade,
+        movie_id INT REFERENCES movie(movie_id) on delete cascade,
         PRIMARY KEY (account_id, profile_id, movie_id)
     """
     db.create_table("wishlist", columns)
