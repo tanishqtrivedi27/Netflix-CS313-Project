@@ -4,6 +4,7 @@ import re
 import numpy as np
 from datetime import datetime
 import redis
+from dateutil.relativedelta import relativedelta
 
 
 class UserQueries:
@@ -316,19 +317,43 @@ class Account:
             self.db.execute_query(query)
             self.db.commit()
             
-            sub_id = self.db.fetch_one()[0]
-            expiration_date = datetime.now()+datetime.relativedelta(months=1)
+            x=self.db.fetch_one()
+            sub_id = x[0]
+            expiration_date = datetime.now().date()+relativedelta(days=30)
             
-            query1 = f'INSERT INTO billing (account_id, payment_mode,subscription_type, billing_date, expiration_date) VALUES ({self.account_id},\'{payment_mode}\',{sub_id},\'{datetime.now()}\',\'{expiration_date}\');'
+            queryz = f'SELECT * FROM billing WHERE account_id={self.account_id} AND expiration_date > DATE(NOW());'
+            self.db.execute_query(queryz)
+            resz = self.db.fetch_one()
             
-            prob = np.random.randn()
+            if(resz is not None):
+                print("SUBSCRIPTION ALREADY PURCHASED FOR CURRENT MONTH")
+                return                
+            
+            query1 = f'INSERT INTO billing (account_id, payment_mode,subscription_type, billing_date, expiration_date) VALUES ({self.account_id},\'{payment_mode}\',{sub_id},\'{datetime.now().date()}\',\'{expiration_date}\');'
             self.db.execute_query(query1)
             
-            if(prob < 0.1):
+            
+            query2 = f'SELECT revenue FROM REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
+            self.db.execute_query(query2)
+            res2 = self.db.fetch_one()
+            if(res2 is not None):
+                # add revenue
+                query4 =f'UPDATE REVENUE SET revenue = {res2[0]+x[2]} WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")}'
+                self.db.execute_query(query4)
+                
+            else:
+                query3 = f'INSERT INTO REVENUE (MONTH, year, revenue) VALUES (\'{datetime.now().strftime("%b")}\', {datetime.now().strftime("%Y")}, {x[2]});'
+                self.db.execute_query(query3)
+
+            prob = np.abs(np.random.randn())
+            print(str(prob)+" - Probability of BANK TRANSACTION FAILURE")
+            if(prob > 0.9):
                 self.db.rollback()
                 print("TRANSACTION FAILED")
             else:
                 print("TRANSACTION SUCCESSFUL")
+                self.db.commit()
+                
             self.db.commit()
         else:
             print("SUBSCRIPTION TIER IS NOT MATCHING")
@@ -367,8 +392,7 @@ class Account:
         self.db.commit()
         self.logout()
         print("ACCOUNT DELETED SUCCESSFULLY")
-        
-                
+                 
     def logout(self):
         self.db.commit_and_close()
         self.redisdb.r.close()
@@ -402,11 +426,9 @@ def signup(email, password):
         
     db.commit_and_close()    
 
-
 def is_valid_email(email):
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(email_pattern, email)
-
 
 def login(email, password) -> Account or None:
     # Check if the user exists
@@ -469,15 +491,8 @@ class RedisDB:
         return
     
     def set_num_devices(self,user_id):
-        # if(self.get_num_devices(user_id)==0):
-    
-        self.r.hset('num_devices',user_id,1)    
-            # return
-        # self.r.hset('num_devices',user_id,self.get_num_devices(user_id)+1)
+        self.r.hset('num_devices',user_id,1) 
         
-        
-
-# Example usage:
 if __name__ == "__main__":
     # Create a account
     
@@ -505,31 +520,37 @@ if __name__ == "__main__":
     signup("vivekpillai@gmail.com", "12345")
     
     account1 = login("tanishq.trivedi27@gmail.com", "123456")
-    account2 = login("tanishq.trivedi27@gmail.com", "123456")
-    account3 = login("tanishq.trivedi27@gmail.com", "123456")
-    account4 = login("tanishq.trivedi27@gmail.com", "123456")
+    account2 = login("vivekpillai@gmail.com", "12345")
+    # account3 = login("tanishq.trivedi27@gmail.com", "123456")
+    # account4 = login("tanishq.trivedi27@gmail.com", "123456")
     
     # Add a movie to the watchlist
     if (account1 is not None):
+        
+        account1.payment_subscription('Standard','UPI')
+        
         account1.create_profile("tanishq", "1111")
         account1.login_profile("tanishq", "1111")
+        
+        
+        account2.payment_subscription('Premium','Cash')
         # account1.logout_profile()
         account2.create_profile("pillai", "1111")
         account2.login_profile("pillai", "1111")
         
-        # account2.delete_account_profile()
+        # # account2.delete_account_profile()
         
-        account3.create_profile("muskan", "1111")
-        account3.login_profile("muskan", "1111")
+        # account3.create_profile("muskan", "1111")
+        # account3.login_profile("muskan", "1111")
         
-        account4.create_profile("gauri", "1111")
-        account4.login_profile("gauri", "1111")
-        account4.logout_profile()
+        # account4.create_profile("gauri", "1111")
+        # account4.login_profile("gauri", "1111")
+        # account4.logout_profile()
         
-        account5 = login("tanishq.trivedi27@gmail.com", "123456")
+        # account5 = login("tanishq.trivedi27@gmail.com", "123456")
         
-        account5.create_profile("mokshita", "1111")
-        account5.login_profile("mokshita", "1111")
+        # account5.create_profile("mokshita", "1111")
+        # account5.login_profile("mokshita", "1111")
         
         # account6 = login("tanishq.trivedi27@gmail.com", "123456")
         
@@ -558,27 +579,27 @@ if __name__ == "__main__":
         # account1.delete_movie_from_wishlist(5)
 
         account1.logout_profile()    
+              
+
+        
         
         account2.logout_profile()
         
-        account3.logout_profile()    
+        # account3.logout_profile()    
         
         
         
-        account5.logout_profile() 
-        # account6.logout_profile() 
-        # account1.delete_account()
+        # account5.logout_profile() 
+        # # account6.logout_profile() 
+        # # account1.delete_account()
         # account1.create_profile("avni", "6969")
         # account1.login_profile("avni", "6969")
-        
-
         logout(account1)
-        
         logout(account2)
         
-        logout(account3)
+        # logout(account3)
         
-        logout(account4)
-        logout(account5)
+        # logout(account4)
+        # logout(account5)
         # logout(account6)
         

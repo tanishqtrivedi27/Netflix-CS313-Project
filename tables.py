@@ -148,10 +148,10 @@ def create_wishlist_table(db):
     """
     db.create_table("wishlist", columns)
 
-def revenue(db):
+def create_revenue_table(db):
     columns = """
         month varchar(255) not null check(month in ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')),
-        year int(4) not null check(year>=2000 and year <=3000),
+        year int not null check(year>=2000 and year <=3000),
         revenue int not null
     """
     db.create_table("revenue", columns)
@@ -200,5 +200,6 @@ if __name__ == "__main__":
     create_wishlist_table(db)
     # create_employee_table(db)
     # create_sales_table(db)
+    create_revenue_table(db)
 
     db.commit_and_close()
