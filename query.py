@@ -20,6 +20,18 @@ class Account:
         self.account_id = account_id
         self.profile_id = None
 
+        self._active_sub = False
+
+        query = f'SELECT * from billing WHERE account_id = {self.account_id} AND expiration_date > DATE(NOW());'
+        self.db.execute_query(query)
+        resz = self.db.fetch_one()
+        if (resz is not None):
+            self._active_sub = True
+
+        if (not self._active_sub):
+            print("Select a subscription and PAY!!!")
+        
+
     def _check_profilelogin(self):
         if (self.profile_id is None):
             print("Login first")
@@ -54,6 +66,8 @@ class Account:
             self.db.commit()
             
     def login_profile(self, profile_name, profile_password):
+        if (not self._active_sub):
+            print("Buy a subscription plan.")
         
         if(self.redisdb.get_num_devices(self.account_id)>=4):
             print("EXCEEDED NUMBER OF PERMITTED DEVICES")
@@ -131,6 +145,7 @@ class Account:
     def add_movie_to_watchlist(self, movie_id):
         if(self._check_profilelogin()):
             return
+        
         query1 = f'SELECT * FROM MOVIE WHERE MOVIE_ID={movie_id};'
         self.db.execute_query(query1)
         res1 = self.db.fetch_one()
