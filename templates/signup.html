@@ -3,11 +3,29 @@
 <head>
     <title>Netflix</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f8f8;
+        @import url('https://fonts.googleapis.com/css?family=Montserrat');
+        html {
+            min-height: 100%;
+            background-image: url({{ url_for('static', filename='lol.jpg') }});
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
         }
+        #content {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px  50px 50px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        
         h1 {
             color: #E50914;
         }
@@ -50,6 +68,7 @@
     </style>
 </head>
 <body>
+    <div id='content'>
     {{msg}}
     <h1>NETFLIX</h1>
     <h2>Signup to Netflix</h2>
@@ -60,7 +79,9 @@
         <label for "password">Password:</label>
         <input type="password" name="password" id="password" required>
         <br>
+        <br>
         <input type="submit" value="Sign Up">
     </form>
+    </div>
 </body>
 </html>

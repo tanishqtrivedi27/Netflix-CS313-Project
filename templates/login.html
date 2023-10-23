@@ -3,27 +3,38 @@
 <head>
     <title>Netflix</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f8f8;
-        }
-        h1 {
-            color: #E50914;
-        }
-        form {
+        @import url('https://fonts.googleapis.com/css?family=Montserrat');
+        html {
+            min-height: 100%;
+            background-image: url({{ url_for('static', filename='lol.jpg') }});
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+         }
+
+         #content {
             max-width: 300px;
             margin: 0 auto;
             background-color: #fff;
-            padding: 20px;
+            padding: 20px 30px 20px 30px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
-        label {
-            display: block;
+
+        h1 {
+            color: #E50914;
+        }
+
+        form {
             text-align: left;
             margin: 10px 0;
         }
+
         input[type="email"],
         input[type="password"] {
             width: 100%;
@@ -31,8 +42,9 @@
             margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 3px;
-            box-sizing: border-box; /* Ensure padding and border are included in the width */
+            box-sizing: border-box;
         }
+
         input[type="submit"] {
             background-color: #E50914;
             color: #fff;
@@ -41,9 +53,11 @@
             border-radius: 3px;
             cursor: pointer;
         }
+
         input[type="submit"]:hover {
             background-color: #B20812;
         }
+
         a {
             text-decoration: none;
             color: #E50914;
@@ -51,22 +65,22 @@
     </style>
 </head>
 <body>
-    <div>
-    {{msg}}
-    <h1>NETFLIX</h1>
-    <h2>Login to Netflix</h2>
-    <form method="POST" action="/account_home">
-        <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password" required>
-        <br>
-        <input type="submit" value="Login">
-    </form>
-    <br/>
-    <br/>
-    <a href="/signup"><u>Don't have an account? Sign Up</u></a>
-</div>
+    <div id="content">
+        {{msg}}
+        <h1>NETFLIX</h1>
+        <h2>Login to Netflix</h2>
+        <form method="POST" action="/account_home">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required>
+            <br>
+            <input type="submit" value="Login">
+        </form>
+        <br/>
+        <br/>
+        <a href="/signup">New to Netflix? Sign up now</a>
+    </div>
 </body>
 </html>
