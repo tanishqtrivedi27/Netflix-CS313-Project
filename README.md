@@ -8,6 +8,10 @@ pip install -r requirements.txt
 ```
 
 ```
+createdb netflix
+```
+
+```
 python tables.py
 ```
 
