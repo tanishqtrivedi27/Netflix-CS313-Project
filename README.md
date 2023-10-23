@@ -10,13 +10,14 @@ pip install -r requirements.txt
 ```
 createdb netflix
 ```
-
 ```
 python tables.py
 ```
-
+```
+python populate.py
+```
 ```
 python app.py
 ```
 
-Go to localhost:5000
+Go to http://1.127.:5000
