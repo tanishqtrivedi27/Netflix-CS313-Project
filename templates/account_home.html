@@ -2,73 +2,150 @@
 <html>
 <head>
     <title>HOME PAGE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .header {
+            background-color: #E50914;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .container h1 {
+            color: #E50914;
+        }
+
+        .container li {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .container form {
+            padding: 20px 0;
+        }
+
+        .container form label {
+            display: block;
+            text-align: left;
+            margin: 10px 0;
+        }
+
+        .container form input[type="text"], 
+        .container form input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .container form input[type="submit"] {
+            background-color: #E50914;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .container form input[type="submit"]:hover {
+            background-color: #B20812;
+        }
+
+        .container a {
+            text-decoration: none;
+            color: #E50914;
+        }
+    </style>
 </head>
 <body>
-    <p> {{msg}}</p>
-    <ol>
-        <li>CREATE PROFILE</li>
-        <li>LOGIN PROFILE</li>
-        <li>PAYMENT</li>
-        <li>UPDATE ACCOUNT PASSWORD</li>
-        <li>DELETE ACCOUNT</li>
-        <li>LOGOUT ACCOUNT</li>
-    </ol>
-    
-    <h1>LOGIN PROFILE</h1>
-    <form method="POST" action="/profile_home">
-        <label for="text">Profile Name:</label>
-        <input type="text" name="name" id="name" required>
-        <br>
-        <label for="password">Profile Password:</label>
-        <input type="password" name="profile_password" id="profile_password" required>
-        <br>
-        <input type="submit" value="Login">
-    </form>
+    <div class="header">
+        <h1>NETFLIX ACCOUNT HOME PAGE</h1>
+    </div>
 
-    <h1>CREATE PROFILE</h1>
-    <form method="POST" action="/account_home">
-        <label for="text">Operation No.:</label>
-        <input type="text" name="op" id="op" required>
-        <br>
-        <label for="text">Profile Name:</label>
-        <input type="text" name="name" id="name" required>
-        <br>
-        <label for="password">Profile Password:</label>
-        <input type="password" name="profile_password" id="profile_password" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+    <div class="container">
+        <p>{{msg}}</p>
+        <h1>Profile Operations</h1>
+        <ol>
+            <li>Create Profile</li>
+            <li>Login Profile</li>
+            <li>Payment</li>
+            <li>Update Account Password</li>
+            <li>Delete Account</li>
+            <li>Logout Account</li>
+        </ol>
 
-    <h1>PAYMENT PROFILE</h1>
-    <form method="POST" action="/account_home">
-        <label for="text">Subscription Type</label>
-        <input type="text" name="Subscription" id="Subscription" required>
-        <br>
-        <label for="text">Payment Mode:</label>
-        <input type="text" name="payment_mode" id="payment_mode" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>Login Profile</h1>
+        <form method="POST" action="/profile_home">
+            <label for="name">Profile Name:</label>
+            <input type="text" name="name" id="name" required>
+            <br>
+            <label for="profile_password">Profile Password:</label>
+            <input type="password" name="profile_password" id="profile_password" required>
+            <br>
+            <input type="submit" value="Login">
+        </form>
 
-    <h1>UPDATE ACCOUNT PASSWORD</h1>
-    <form method="POST" action="/account_home">
-        <label for="text">OLD PASSWORD</label>
-        <input type="text" name="old_pass" id="old_pass" required>
-        <br>
-        <label for="text">NEW PASSWORD</label>
-        <input type="text" name="new_pass" id="new_pass" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>Create Profile</h1>
+        <form method="POST" action="/account_home">
+            <label for="op">Operation No.:</label>
+            <input type="text" name="op" id="op" required>
+            <br>
+            <label for="name">Profile Name:</label>
+            <input type="text" name="name" id="name" required>
+            <br>
+            <label for="profile_password">Profile Password:</label>
+            <input type="password" name="profile_password" id="profile_password" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <h1>DELETE and LOGOUT</h1>
-    <form method="POST" action="/account_home">
-        <label for="text">Operation No.:</label>
-        <input type="text" name="op" id="op" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>Payment Profile</h1>
+        <form method="POST" action="/account_home">
+            <label for="Subscription">Subscription Type</label>
+            <input type="text" name="Subscription" id="Subscription" required>
+            <br>
+            <label for="payment_mode">Payment Mode:</label>
+            <input type="text" name="payment_mode" id="payment_mode" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
+        <h1>Update Account Password</h1>
+        <form method="POST" action="/account_home">
+            <label for="old_pass">Old Password</label>
+            <input type="password" name="old_pass" id="old_pass" required>
+            <br>
+            <label for="new_pass">New Password</label>
+            <input type="password" name="new_pass" id="new_pass" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
+        <h1>Delete and Logout</h1>
+        <form method="POST" action="/account_home">
+            <label for="op">Operation No.:</label>
+            <input type="text" name="op" id="op" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
 </body>
 </html>

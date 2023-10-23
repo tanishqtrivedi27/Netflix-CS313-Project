@@ -2,16 +2,62 @@
 <html>
 <head>
     <title>Netflix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        h1 {
+            color: #E50914;
+        }
+        form {
+            max-width: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            color: #333;
+        }
+        label {
+            display: block;
+            text-align: left;
+            margin: 10px 0;
+        }
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box; /* Ensure padding and border are included in the width */
+        }
+        input[type="submit"] {
+            background-color: #E50914;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #B20812;
+        }
+    </style>
 </head>
 <body>
     {{msg}}
     <h1>NETFLIX</h1>
-    <h2>Signup to netflix</h2>
+    <h2>Signup to Netflix</h2>
     <form method="POST" action="/signup">
         <label for="email">Email:</label>
         <input type="email" name="email" id="email" required>
         <br>
-        <label for="password">Password:</label>
+        <label for "password">Password:</label>
         <input type="password" name="password" id="password" required>
         <br>
         <input type="submit" value="Sign Up">

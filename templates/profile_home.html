@@ -2,81 +2,159 @@
 <html>
 <head>
     <title>HOME PAGE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .header {
+            background-color: #E50914;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .container h1 {
+            color: #E50914;
+        }
+
+
+        .container li {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .container form {
+            padding: 20px 0;
+        }
+
+        .container form label {
+            display: block;
+            text-align: left;
+            margin: 10px 0;
+        }
+
+        .container form input[type="text"], 
+        .container form input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .container form input[type="submit"] {
+            background-color: #E50914;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .container form input[type="submit"]:hover {
+            background-color: #B20812;
+        }
+
+        .container a {
+            text-decoration: none;
+            color: #E50914;
+        }
+    </style>
 </head>
 <body>
-    <div>{{msg}}</div>
-    <ol>
-        <li>ADD MOVIE TO WATCHLIST</li>
-        <li>ADD MOVIE TO WISHLIST</li>
-        <li>UPDATE MOVIE TIMESTAMP IN WATCHLIST</li>
-        <li>DELETE MOVIE FROM WISHLIST</li>
-        <li>POST RECOMMENDATIONS</li>
-        <li>RATE MOVIES</li>
-        <li>RESUME MOVIE FROM WATCHLIST</li>
-        <li>UPDATE PROFILE PASSWORD</li>
-        <li>DELETE PROFILE</li>
-        <li>LOGOUT PROFILE</li>
-    </ol>
+    <div class="header">
+        <h1>NETFLIX PROFILE HOME PAGE</h1>
+    </div>
 
-    <h1>MOVIE OPERATIONS FOR 1,2,4,7</h1>
-    <form method="POST" action="/profile_home">
-        <label for="text">OPERATION NUMBER</label>
-        <input type="text" name="opno" id="opno" required>
-        <br>
-        <label for="text">Movie_ID</label>
-        <input type="text" name="mid" id="mid" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+    <div class="container">
+        <div>{{msg}}</div>
+        <h1>MOVIE OPERATIONS</h1>
+        <ol>
+            <li>ADD MOVIE TO WATCHLIST</li>
+            <li>ADD MOVIE TO WISHLIST</li>
+            <li>UPDATE MOVIE TIMESTAMP IN WATCHLIST</li>
+            <li>DELETE MOVIE FROM WISHLIST</li>
+            <li>POST RECOMMENDATIONS</li>
+            <li>RATE MOVIES</li>
+            <li>RESUME MOVIE FROM WATCHLIST</li>
+            <li>UPDATE PROFILE PASSWORD</li>
+            <li>DELETE PROFILE</li>
+            <li>LOGOUT PROFILE</li>
+        </ol>
 
-    <h1>MOVIE OPERATIONS FOR 8</h1>
-    <form method="POST" action="/profile_home">
-        <label for="text">OLD PASSWORD</label>
-        <input type="text" name="old_pass" id="old_pass" required>
-        <br>
-        <label for="text">NEW PASSWORD</label>
-        <input type="text" name="new_pass" id="new_pass" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>MOVIE OPERATIONS FOR 1,2,4,7</h1>
+        <form method="POST" action="/profile_home">
+            <label for="opno">OPERATION NUMBER</label>
+            <input type="text" name="opno" id="opno" required>
+            <br>
+            <label for="mid">Movie_ID</label>
+            <input type="text" name="mid" id="mid" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <h1>MOVIE OPERATIONS FOR 9,10</h1>
-    <form method="POST" action="/profile_home">
-        <label for="text">OPERATION NUMBER</label>
-        <input type="text" name="opno" id="opno" required>
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>MOVIE OPERATIONS FOR 8</h1>
+        <form method="POST" action="/profile_home">
+            <label for="old_pass">OLD PASSWORD</label>
+            <input type="password" name="old_pass" id="old_pass" required>
+            <br>
+            <label for="new_pass">NEW PASSWORD</label>
+            <input type="password" name="new_pass" id="new_pass" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <h1>MOVIE OPERATIONS FOR 6</h1>
-    <form method="POST" action="/profile_home">
-        <label for="text">MOVIE_ID</label>
-        <input type="text" name="mid" id="mid" required>
-        <br>
-        <label for="text">RATING</label>
-        <input type="text" name="rating" id="rating" required>\
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>MOVIE OPERATIONS FOR 9,10</h1>
+        <form method="POST" action="/profile_home">
+            <label for="opno">OPERATION NUMBER</label>
+            <input type="text" name="opno" id="opno" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <h1>MOVIE OPERATIONS FOR 3</h1>
-    <form method="POST" action="/profile_home">
-        <label for="text">MOVIE_ID</label>
-        <input type="text" name="mid" id="mid" required>
-        <br>
-        <label for="text">TIMESTAMP</label>
-        <input type="text" name="timestamp" id="timestamp" required>\
-        <br>
-        <input type="submit" value="submit">
-    </form>
+        <h1>MOVIE OPERATIONS FOR 6</h1>
+        <form method="POST" action="/profile_home">
+            <label for="mid">MOVIE_ID</label>
+            <input type="text" name="mid" id="mid" required>
+            <br>
+            <label for="rating">RATING</label>
+            <input type="text" name="rating" id="rating" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <h1>MOVIE OPERATIONS FOR 5</h1>
-    <form method="POST" action="/profile_home">
-        <input type="submit" value="submit">
-    </form>
+        <h1>MOVIE OPERATIONS FOR 3</h1>
+        <form method="POST" action="/profile_home">
+            <label for="mid">MOVIE_ID</label>
+            <input type="text" name="mid" id="mid" required>
+            <br>
+            <label for="timestamp">TIMESTAMP</label>
+            <input type="text" name="timestamp" id="timestamp" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
 
-    <div>
-        {{result}}
+        <h1>MOVIE OPERATIONS FOR 5</h1>
+        <form method="POST" action="/profile_home">
+            <input type="submit" value="Submit">
+        </form>
+
+        <div>{{result}}</div>
     </div>
 </body>
 </html>
