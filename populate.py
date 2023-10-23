@@ -29,7 +29,6 @@ def add_movie(mov_id , title , gen , des , date , act , dir):
         print(e)
         conn.rollback()
                     
-
 def add_genre(gen_id , gen_name):
     sql = f"INSERT INTO genre(genre_id , genre_name) VALUES ({gen_id},'{gen_name}');"
     try :
@@ -49,7 +48,6 @@ def add_actor(act_id , act_name):
     except psycopg2.DatabaseError as e :
         print(e)
         conn.rollback()
-
 
 def add_director(dir_id , dir_name):
     sql = f"INSERT INTO director(director_id , director_name) VALUES ({dir_id},'{dir_name}');"
@@ -86,8 +84,6 @@ for ind in tqdm(data_dir.index):
     win_1252_string = codecs.encode(data_dir['director_name'][ind] , 'windows-1252' , errors='ignore').decode('windows-1252')
     add_director(int(data_dir['director_id'][ind]) , str(win_1252_string).replace("'" , ""))
     
-
-count = 0
 for ind in tqdm(data_mov.index):
         mov_id = int(data_mov['movie_id'][ind])
 
@@ -101,19 +97,10 @@ for ind in tqdm(data_mov.index):
         des = utf8_to_win1252(des)
 
         date = data_mov['release_date'][ind]
-        if (date == 'na'):
-            continue
-       
         act = random.randint(1, 50000)
-
         dir = random.randint(1, 2570)
 
         add_movie(mov_id , title , gen , des , date , act , dir)
-    
-
-        
-
-print(count)
 
 cur.close()
 conn.close()
