@@ -20,4 +20,4 @@ python populate.py
 python app.py
 ```
 
-Go to http://1.127.:5000
+Go to http://localhost:5000
