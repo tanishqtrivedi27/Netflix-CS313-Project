@@ -97,6 +97,7 @@ if __name__ == "__main__":
     db = Database(db_name, db_user, db_password, db_host, db_port)
     
     mv = MovieQueries(db)
+    # Transaction 2
     
     mv.create_movie("Dune", 1, "description maybe", datetime.today(), 1, 1, 1, 1000)
     mv.create_movie("Radhe",1 ,"description maybe not", datetime.today(), 1, 1, 1, 4000)

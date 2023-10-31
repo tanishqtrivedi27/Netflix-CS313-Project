@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify, session, render_template, redirect, url_for
-import time
+from flask import Flask, request, session, render_template, redirect, url_for
 from flask_session import Session
 from query import Account,login,logout,signup
 import psycopg2 

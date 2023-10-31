@@ -3,7 +3,7 @@
 # Install Python dependencies
 pip install -r requirements.txt
 
-memurai-cli FLUSHALL
+redis-cli FLUSHALL
 
 # Execute Python scripts
 python tables.py

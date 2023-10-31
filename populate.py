@@ -4,7 +4,6 @@ import random
 from tqdm import tqdm
 import codecs
 from decouple import config
-import ast
 
 conn = psycopg2.connect(host=config('DB_HOST'),
                         dbname=config('DB_NAME'), 
