@@ -99,7 +99,7 @@
             <li>ADD MOVIE TO WISHLIST</li>
             <li>UPDATE MOVIE TIMESTAMP IN WATCHLIST</li>
             <li>DELETE MOVIE FROM WISHLIST</li>
-            <li>POST RECOMMENDATIONS</li>
+            <li>GET RECOMMENDATIONS</li>
             <li>RATE MOVIES</li>
             <li>RESUME MOVIE FROM WATCHLIST</li>
             <li>UPDATE PROFILE PASSWORD</li>
@@ -117,31 +117,25 @@
             <input type="submit" value="Submit">
         </form>
 
-        <h1>SHOW WISHLIST</h1>
+        <h1>ADD MOVIE TO WATCHLIST</h1>
         <form method="POST" action="/profile_home">
-            <input type="hidden" name="wish" id="wish" value='99'>
-            <input type="submit" value="Submit">
-        </form>
-
-        <h1>SHOW WATCHLIST</h1>
-        <form method="POST" action="/profile_home">
-            <input type="hidden" name="watch" id="watch" value='99'>
-            <input type="submit" value="Submit">
-        </form>
-
-
-        <h1>MOVIE OPERATIONS FOR 1,2,4,7</h1>
-        <form method="POST" action="/profile_home">
-            <label for="opno">OPERATION NUMBER</label>
-            <input type="text" name="opno" id="opno" required>
-            <br>
+            <input type="hidden" name="opno" id="opno" value="1">
             <label for="mid">Movie_ID</label>
             <input type="text" name="mid" id="mid" required>
             <br>
             <input type="submit" value="Submit">
         </form>
 
-        <h1>MOVIE OPERATIONS FOR 3</h1>
+        <h1>ADD MOVIE TO WISHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="opno" id="opno" value="2">
+            <label for="mid">Movie_ID</label>
+            <input type="text" name="mid" id="mid" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>UPDATE MOVIE TIMESTAMP IN WATCHLIST</h1>
         <form method="POST" action="/profile_home">
             <label for="mid">MOVIE_ID</label>
             <input type="text" name="mid" id="mid" required>
@@ -152,12 +146,22 @@
             <input type="submit" value="Submit">
         </form>
 
-        <h1>MOVIE OPERATIONS FOR 5</h1>
+        <h1>DELETE MOVIE FROM WISHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="opno" id="opno" value="4">
+
+            <label for="mid">Movie_ID</label>
+            <input type="text" name="mid" id="mid" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>GET MOVIE RECOMMENDATIONS</h1>
         <form method="POST" action="/profile_home">
             <input type="submit" value="Submit">
         </form>
         
-        <h1>MOVIE OPERATIONS FOR 6</h1>
+        <h1>RATE MOVIE IN WATCHLIST</h1>
         <form method="POST" action="/profile_home">
             <label for="mid">MOVIE_ID</label>
             <input type="text" name="mid" id="mid" required>
@@ -168,7 +172,18 @@
             <input type="submit" value="Submit">
         </form>
 
-        <h1>MOVIE OPERATIONS FOR 8</h1>
+        <h1>RESUME MOVIE FROM WATCHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="opno" id="opno" value="7">
+
+            <label for="mid">Movie_ID</label>
+            <input type="text" name="mid" id="mid" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+
+
+        <h1>UPDATE PROFILE PASSWORD</h1>
         <form method="POST" action="/profile_home">
             <label for="old_pass">OLD PASSWORD</label>
             <input type="password" name="old_pass" id="old_pass" required>
@@ -179,13 +194,30 @@
             <input type="submit" value="Submit">
         </form>
 
-        <h1>MOVIE OPERATIONS FOR 9,10</h1>
+        <h1>DELETE PROFILE</h1>
         <form method="POST" action="/profile_home">
-            <label for="opno">OPERATION NUMBER</label>
-            <input type="text" name="opno" id="opno" required>
-            <br>
+            <input type="hidden" name="opno" id="opno" value="9">
             <input type="submit" value="Submit">
         </form>
+
+        <h1>LOGOUT PROFILE</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="opno" id="opno" value="10">
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>SHOW WISHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="wish" id="wish" value='99'>
+            <input type="submit" value="Submit">
+        </form>
+        
+        <h1>SHOW WATCHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="watch" id="watch" value='99'>
+            <input type="submit" value="Submit">
+        </form>
+        
     </div>
 </body>
 </html>

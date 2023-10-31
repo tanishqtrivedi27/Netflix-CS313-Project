@@ -116,9 +116,7 @@
 
         <h1>Create Profile</h1>
         <form method="POST" action="/account_home">
-            <label for="op">Operation No.:</label>
-            <input type="text" name="op" id="op" required>
-            <br>
+            <input type="hidden" name="op" id="op" value="1">
             <label for="name">Profile Name:</label>
             <input type="text" name="name" id="name" required>
             <br>
@@ -155,11 +153,15 @@
             <input type="submit" value="Submit">
         </form>
 
-        <h1>Delete and Logout</h1>
+        <h1>Delete Account</h1>
         <form method="POST" action="/account_home">
-            <label for="op">Operation No.:</label>
-            <input type="text" name="op" id="op" required>
-            <br>
+            <input type="hidden" name="op" id="op" value="5">
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>Logout Account</h1>
+        <form method="POST" action="/account_home">
+            <input type="hidden" name="op" id="op" value="6">
             <input type="submit" value="Submit">
         </form>
     </div>

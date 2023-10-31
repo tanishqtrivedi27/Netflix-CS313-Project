@@ -113,7 +113,7 @@ for ind in tqdm(data_mov.index):
         des = utf8_to_win1252(des)
 
         date = data_mov['release_date'][ind]
-        act = random.randint(1, 50000)
+        act = random.randint(1, 2000)
         dir = random.randint(1, 2570)
 
         add_movie(mov_id , title , gen , des , date , act , dir)

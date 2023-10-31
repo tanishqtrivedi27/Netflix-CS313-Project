@@ -403,7 +403,8 @@ class Account:
         
         rec_movies = self.redisdb.get_recommendation(self.account_id,self.profile_id)
         if(len(rec_movies) == 0):
-            query2 = f'SELECT title FROM MOVIE LIMIT 5;'
+            ran = random.randint(1, 3000)
+            query2 = f'SELECT title FROM MOVIE OFFSET {ran} ROWS LIMIT 5;'
             self.db.execute_query(query2)
             rec_movie = self.db.fetch_all()
             rec_ls = [i[0] for i in rec_movie]

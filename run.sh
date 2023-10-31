@@ -3,7 +3,7 @@
 # Install Python dependencies
 pip install -r requirements.txt
 
-redis-cli FLUSHALL
+memurai-cli FLUSHALL
 
 # Execute Python scripts
 python tables.py
@@ -15,4 +15,3 @@ sleep 5
 
 # Open the browser to the localhost
 xdg-open http://localhost:5000
-
