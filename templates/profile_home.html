@@ -105,7 +105,30 @@
             <li>UPDATE PROFILE PASSWORD</li>
             <li>DELETE PROFILE</li>
             <li>LOGOUT PROFILE</li>
+            <li>SHOW WISHLIST</li>
+            <li>SHOW WATCHLIST</li>
         </ol>
+
+        <h1>GET MOVIE ID</h1>
+        <form method="POST" action="/profile_home">
+            <label for="title">MOVIE NAME</label>
+            <input type="text" name="title" id="title" required>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>SHOW WISHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="wish" id="wish" value='99'>
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>SHOW WATCHLIST</h1>
+        <form method="POST" action="/profile_home">
+            <input type="hidden" name="watch" id="watch" value='99'>
+            <input type="submit" value="Submit">
+        </form>
+
 
         <h1>MOVIE OPERATIONS FOR 1,2,4,7</h1>
         <form method="POST" action="/profile_home">

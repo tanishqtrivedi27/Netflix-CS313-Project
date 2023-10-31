@@ -4,20 +4,5 @@ CS313 Project
 Create .env file similar to .env.sample
 
 ```
-pip install -r requirements.txt
+bash run.sh
 ```
-
-```
-createdb netflix
-```
-```
-python tables.py
-```
-```
-python populate.py
-```
-```
-python app.py
-```
-
-Go to http://localhost:5000

@@ -69,6 +69,22 @@ def utf8_to_win1252(utf8_string):
         # Handle the exception or return an error message
         return f"Error: {str(e)}"
 
+def create_initial_entries():
+    query1 = "INSERT INTO account (email, password) VALUES('agrim@gmail.com', 'jain');"
+    query2 = "INSERT INTO account (email, password) VALUES('vivek@gmail.com', 'pillai');"
+    query3 = "INSERT INTO account (email, password) VALUES('tanishq@gmail.com', 'trivedi');"
+    query4 = "INSERT INTO account (email, password) VALUES('tejas@gmail.com', 'mhaiskar');"
+    
+    query5 = "INSERT INTO subscription_tiers (name, price, max_devices) VALUES('Mobile', 139, 1);"
+    query6 = "INSERT INTO subscription_tiers (name, price, max_devices) VALUES('Basic', 199, 1);"
+    query7 = "INSERT INTO subscription_tiers (name, price, max_devices) VALUES('Standard', 299, 2);"
+    query8 = "INSERT INTO subscription_tiers (name, price, max_devices) VALUES('Premium', 649, 4);"
+    
+    for i in range(8):
+        temp = f'query{i+1}'
+        cur.execute(eval(temp))
+    conn.commit()
+    
 for ind in data_gen.index:
     add_genre(int(data_gen['genre_id'][ind]) , str(data_gen['genre_name'][ind]))
 
@@ -101,6 +117,8 @@ for ind in tqdm(data_mov.index):
         dir = random.randint(1, 2570)
 
         add_movie(mov_id , title , gen , des , date , act , dir)
+        
+create_initial_entries()
 
 cur.close()
 conn.close()

@@ -128,10 +128,15 @@
             <input type="submit" value="Submit">
         </form>
 
-        <h1>Payment Profile</h1>
+        <h1>Payment Portal</h1>
         <form method="POST" action="/account_home">
             <label for="Subscription">Subscription Type</label>
-            <input type="text" name="Subscription" id="Subscription" required>
+            <select name="Subscription" id="Subscription">
+                <option value="Mobile">Mobile</option>
+                <option value="Basic">Basic</option>
+                <option value="Standard">Standard</option>
+                <option value="Premium">Premium</option>
+            </select>
             <br>
             <label for="payment_mode">Payment Mode:</label>
             <input type="text" name="payment_mode" id="payment_mode" required>

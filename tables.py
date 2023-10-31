@@ -146,14 +146,21 @@ def create_database():
             host=config('DB_HOST'),
             port=config('DB_PORT')
         )
+    conn.autocommit = True
+
     cur = conn.cursor()
-    
-    cur.execute("SELECT 'CREATE DATABASE netflix' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'netflix')")
-    conn.commit()
+
+    try:
+        cur.execute("CREATE DATABASE netflix")
+        print("Database 'netflix' created successfully.")
+    except psycopg2.Error as e:
+        print(f"Error creating database: {e}")
+
     cur.close()
     conn.close()
     
 if __name__ == "__main__":
+    create_database()
     db_name = config('DB_NAME')
     db_user = config('DB_USER')
     db_password = config('DB_PASSWORD')

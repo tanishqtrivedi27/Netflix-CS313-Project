@@ -2,7 +2,8 @@ from flask import Flask, request, jsonify, session, render_template, redirect, u
 import time
 from flask_session import Session
 from query import Account,login,logout,signup
-
+import psycopg2 
+from decouple import config
 
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -102,6 +103,38 @@ def profile_home():
     global i
     
     if request.method == 'POST':
+        
+        if('wish' in request.form):
+            x = accounts[session['gauri']].show_wishlist()
+            return render_template('profile_home.html', msg=x['msg'])
+        
+        if('watch' in request.form):
+            x = accounts[session['gauri']].show_watchlist()
+            return render_template('profile_home.html', msg=x['msg'])
+        
+        if ('title' in request.form):
+            title = request.form['title']
+            conn = psycopg2.connect(
+                dbname=config('DB_NAME'),
+                user=config('DB_USER'),
+                password=config('DB_PASSWORD'),
+                host=config('DB_HOST'),
+                port=config('DB_PORT')
+            )
+            cur = conn.cursor()
+            query = f'SELECT * FROM movie WHERE title = \'{title}\';'
+            cur.execute(query)
+            res = cur.fetchone()
+            if(res is None):
+                cur.close()
+                conn.close()
+                return render_template('profile_home.html', msg="No such Movie found")
+            else:
+                cur.close()
+                conn.close()
+                return render_template('profile_home.html', msg=f'Movie Id of Given Movie: {res[0]}')
+            
+            
         # LOGIN PROFILE
         if ('name' in request.form and 'profile_password' in request.form):
             name = request.form['name']

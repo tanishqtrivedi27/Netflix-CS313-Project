@@ -178,6 +178,8 @@ class Account:
         if(res1 is None):
             print("INVALID MOVIE ID")
             return {'err': 0, 'msg': "INVALID MOVIE ID"}
+        
+        title = res1[1]
         self.db.commit()
         cur_genre = res1[2]
         time_stamp = "00:00:00"
@@ -196,7 +198,7 @@ class Account:
         rec_movie = self.db.fetch_all()
         for i in rec_movie:
             self.redisdb.add_recommendation(self.account_id, self.profile_id, i[0])
-        return {'err': 1, 'msg': 'MOVIE ADDED TO WATCHLIST'}
+        return {'err': 1, 'msg': f'{title} ADDED TO WATCHLIST'}
             
     def add_movie_to_wishlist(self, movie_id):
         if(self._check_profilelogin()):
@@ -219,6 +221,41 @@ class Account:
             self.db.rollback()
             return {'err': 0, 'msg': "MOVIE ALREADY PRESENT IN WISHLIST"}
         return {'err': 1, 'msg': 'MOVIE ADDED TO WISHLIST'}
+    
+    def movie_id_to_title(self, movie_id):
+        query =f'SELECT * FROM movie WHERE movie_id = \'{movie_id}\';'
+        self.db.execute_query(query)
+        res = self.db.fetch_one()
+        print(res)
+        return res[1]
+    
+    def show_wishlist(self):
+        query = f'SELECT movie_id FROM wishlist WHERE (account_id, profile_id) = ({self.account_id}, {self.profile_id});'
+        self.db.execute_query(query)
+        res1 = self.db.fetch_all()
+        # print(res1)
+        if(len(res1)==0):
+            return {'err': 0, 'msg': "MOVIE WISHLIST IS EMPTY"}
+        else:
+            list_movie = []
+            for i in res1:
+                list_movie.append(self.movie_id_to_title(i[0]))
+            st = ", ".join(list_movie)   
+        return {'err': 1, 'msg': f'MOVIES IN WISHLIST: {st}'}
+        
+    def show_watchlist(self):
+        query = f'SELECT movie_id FROM watchlist WHERE (account_id, profile_id) = ({self.account_id}, {self.profile_id});'
+        self.db.execute_query(query)
+        res1 = self.db.fetch_all()
+        # print(res1)
+        if(len(res1)==0):
+            return {'err': 0, 'msg': "MOVIE WATCHLIST IS EMPTY"}
+        else:
+            list_movie = []
+            for i in res1:
+                list_movie.append(self.movie_id_to_title(i[0]))
+            st = ", ".join(list_movie)   
+        return {'err': 1, 'msg': f'MOVIES IN WATCHLIST: {st}'}
 
     def update_movie_timestamp(self, movie_id, timestamp):
         if(self._check_profilelogin()):
