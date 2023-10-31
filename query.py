@@ -85,6 +85,8 @@ class Account:
         resz = self.db.fetch_one()
         if (resz is not None):
             self._active_sub = True
+        else:
+            self._active_sub = False
 
         if (self._active_sub):
             
@@ -396,7 +398,22 @@ class Account:
         else:
             print("SUBSCRIPTION TIER IS NOT MATCHING")
             return {'err':0, 'msg':'SUBSCRIPTION TIER IS NOT MATCHING'}
-            
+    
+    def payment_cancellation(self):
+        queryz = f'SELECT * FROM billing WHERE account_id={self.account_id} AND expiration_date > DATE(NOW());'
+        self.db.execute_query(queryz)
+        resz = self.db.fetch_one()
+        
+        if(resz is None):
+            print("YOU HAVEN'T SUBSCIBED YET !!")
+            return {'err':0, 'msg':"YOU HAVEN'T SUBSCIBED YET !!"}
+        
+        billing_id = resz[0]
+        query1 = f'DELETE FROM billing WHERE account_id={self.account_id} AND billing_id={billing_id} ;'
+        self.db.execute_query(query1)
+        self.db.commit()
+        return {'err':1, 'msg':"SUBSCRIPTION CANCELED SUCCESSFULLY"}
+    
     def get_user_recommendation(self):
         if(self._check_profilelogin()):
             return

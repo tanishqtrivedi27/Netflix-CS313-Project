@@ -47,7 +47,7 @@
         }
 
         .container form {
-            padding: 20px 0;
+            padding: 0px 0;
         }
 
         .container form label {
@@ -98,6 +98,7 @@
             <li>Create Profile</li>
             <li>Login Profile</li>
             <li>Payment</li>
+            <li>Cancel Subscription</li>
             <li>Update Account Password</li>
             <li>Delete Account</li>
             <li>Logout Account</li>
@@ -139,6 +140,12 @@
             <label for="payment_mode">Payment Mode:</label>
             <input type="text" name="payment_mode" id="payment_mode" required>
             <br>
+            <input type="submit" value="Submit">
+        </form>
+
+        <h1>Cancel Subscription</h1>
+        <form method="POST" action="/account_home">
+            <input type="hidden" name="cancel" id="cancel" value="5">
             <input type="submit" value="Submit">
         </form>
 

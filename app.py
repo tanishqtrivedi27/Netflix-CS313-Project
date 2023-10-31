@@ -33,8 +33,13 @@ def account_home():
     global i
     
     if(request.method == 'POST'):
+        # SUBSCRIPTION CANCELLED
+        if ('cancel' in request.form):
+            x = accounts[session['gauri']].payment_cancellation()
+            return render_template('account_home.html', msg=x['msg'])
+        
         # LOGIN ACCOUNT
-        if ('password' in request.form and 'email' in request.form):
+        elif ('password' in request.form and 'email' in request.form):
             email = request.form['email']
             password = request.form['password']
             session['email'] = email
@@ -53,7 +58,7 @@ def account_home():
             return render_template('account_home.html')
 
         # CREATE PROFILE
-        if('op' in request.form and 'name' in request.form and 'profile_password' in request.form):
+        elif('op' in request.form and 'name' in request.form and 'profile_password' in request.form):
             name = request.form['name']
             profile_password = request.form['profile_password']
 
