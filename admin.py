@@ -98,7 +98,7 @@ if __name__ == "__main__":
     
     mv = MovieQueries(db)
     
-    mv.create_movie("sarrix",1,"ABC",datetime.today(),1,1, 1, 1000)
-    mv.create_movie("Inception",1,"LOLOLOLOLOLO",datetime.today(),1,1, 1, 4000)
+    mv.create_movie("Dune", 1, "description maybe", datetime.today(), 1, 1, 1, 1000)
+    mv.create_movie("Radhe",1 ,"description maybe not", datetime.today(), 1, 1, 1, 4000)
     
     db.commit_and_close()

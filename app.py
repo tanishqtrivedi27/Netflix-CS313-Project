@@ -198,18 +198,5 @@ def profile_home():
             
     return render_template('profile_home.html')
 
-
-# class Account:
-#     def __init__(self, STE1, SR2):
-#         self.email = STE1
-#         pass
-
-#     def __str__(self):
-#         return "XYZ"
-
-#     def pp(self):
-#         # print(self.email)
-#         return self.email
-
 if __name__ == '__main__':
     app.run(debug=True)
