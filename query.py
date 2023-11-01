@@ -24,6 +24,8 @@ class Account:
 
         self._active_sub = False
 
+        self.current_price = 0
+
         query = f'SELECT * from billing WHERE account_id = {self.account_id} AND expiration_date > DATE(NOW());'
         self.db.execute_query(query)
         resz = self.db.fetch_one()
@@ -376,6 +378,7 @@ class Account:
             query2 = f'SELECT revenue FROM REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
             self.db.execute_query(query2)
             res2 = self.db.fetch_one()
+            self.current_price = x[2]
             if(res2 is not None):
                 # add revenue
                 query4 =f'UPDATE REVENUE SET revenue = {res2[0]+x[2]} WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")}'
@@ -415,6 +418,15 @@ class Account:
         billing_id = resz[0]
         query1 = f'DELETE FROM billing WHERE account_id={self.account_id} AND billing_id={billing_id} ;'
         self.db.execute_query(query1)
+        
+        query2 = f'SELECT revenue FROM REVENUE WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")};'
+        self.db.execute_query(query2)
+        res2 = self.db.fetch_one()
+        if(res2 is not None):
+            # add revenue
+            query4 =f'UPDATE REVENUE SET revenue = {res2[0] - self.current_price} WHERE MONTH = \'{datetime.now().strftime("%b")}\' and year ={datetime.now().strftime("%Y")}'
+            self.db.execute_query(query4)
+            
         self.db.commit()
         return {'err':1, 'msg':"SUBSCRIPTION CANCELED SUCCESSFULLY"}
     
