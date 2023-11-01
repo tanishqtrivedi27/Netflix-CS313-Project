@@ -1,72 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>HOME PAGE</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Account Home Page</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
     <style>
-        @import url('https://fonts.googleapis.com/css?family=Montserrat');
-        html {
-            min-height: 100%;
-            background-image: url({{ url_for('static', filename='lol.jpg') }});
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-         }
-
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            font-family: 'Montserrat', sans-serif;
+            background: url("{{ url_for('static', filename='lol.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
             padding: 0;
-            text-align: center;
+            color: white;
         }
 
         .header {
-            background-color: #E50914;
+            background: linear-gradient(to bottom,rgba(0, 0, 0, 1) , rgba(0, 0, 0, 0));
             color: white;
             padding: 20px 0;
+            text-align: center;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            text-align: left;
         }
 
-        .container h1 {
+        h1 {
             color: #E50914;
+            margin-top: 0;
         }
 
-        .container li {
+        p {
+            text-align: center;
+        }
+
+        .operations-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .operations-list li {
             font-size: 18px;
             margin: 10px 0;
         }
 
-        .container form {
-            padding: 0px 0;
+        form {
+            margin: 20px 0;
         }
 
-        .container form label {
+        label {
             display: block;
-            text-align: left;
-            margin: 10px 0;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
 
-        .container form input[type="text"], 
-        .container form input[type="password"] {
+        input[type="text"],
+        input[type="password"],
+        select {
             width: 100%;
             padding: 10px;
             margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 3px;
             box-sizing: border-box;
+            background-color: #ccc;
         }
 
-        .container form input[type="submit"] {
+        input[type="submit"] {
             background-color: #E50914;
             color: white;
             border: none;
@@ -75,26 +81,33 @@
             cursor: pointer;
         }
 
-        .container form input[type="submit"]:hover {
+        input[type="submit"]:hover {
             background-color: #B20812;
         }
 
-        .container a {
+        a {
             text-decoration: none;
             color: #E50914;
         }
+
+        .message{
+            font-size: 25px;
+        }
+
+
+
     </style>
 </head>
 <body>
-    <div>
     <div class="header">
-        <h1>NETFLIX ACCOUNT HOME PAGE</h1>
+        <h1>Netflix Account Home Page</h1>
     </div>
 
     <div class="container">
-        <p>{{msg}}</p>
+        <p class='message'><b>{{msg}}</b></p>
+
         <h1>Profile Operations</h1>
-        <ol>
+        <ul class="operations-list">
             <li>Create Profile</li>
             <li>Login Profile</li>
             <li>Payment</li>
@@ -102,7 +115,7 @@
             <li>Update Account Password</li>
             <li>Delete Account</li>
             <li>Logout Account</li>
-        </ol>
+        </ul>
 
         <h1>Login Profile</h1>
         <form method="POST" action="/profile_home">
@@ -115,6 +128,8 @@
             <input type="submit" value="Login">
         </form>
 
+        <hr>
+
         <h1>Create Profile</h1>
         <form method="POST" action="/account_home">
             <input type="hidden" name="op" id="op" value="1">
@@ -124,8 +139,10 @@
             <label for="profile_password">Profile Password:</label>
             <input type="password" name="profile_password" id="profile_password" required>
             <br>
-            <input type="submit" value="Submit">
+            <input type="submit" value="Create">
         </form>
+
+        <hr>
 
         <h1>Payment Portal</h1>
         <form method="POST" action="/account_home">
@@ -143,11 +160,15 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>Cancel Subscription</h1>
         <form method="POST" action="/account_home">
             <input type="hidden" name="cancel" id="cancel" value="5">
             <input type="submit" value="Submit">
         </form>
+
+        <hr>
 
         <h1>Update Account Password</h1>
         <form method="POST" action="/account_home">
@@ -160,18 +181,21 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>Delete Account</h1>
         <form method="POST" action="/account_home">
             <input type="hidden" name="op" id="op" value="5">
-            <input type="submit" value="Submit">
+            <input type="submit" value="Delete">
         </form>
+
+        <hr>
 
         <h1>Logout Account</h1>
         <form method="POST" action="/account_home">
             <input type="hidden" name="op" id="op" value="6">
-            <input type="submit" value="Submit">
+            <input type="submit" value="Logout">
         </form>
     </div>
-    
 </body>
 </html>

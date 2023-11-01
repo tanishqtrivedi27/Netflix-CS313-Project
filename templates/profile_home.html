@@ -1,73 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HOME PAGE</title>
+    <title>NETFLIX PROFILE HOME PAGE</title>
     <style>
         @import url('https://fonts.googleapis.com/css?family=Montserrat');
-        html {
-            min-height: 100%;
-            background-image: url({{ url_for('static', filename='lol.jpg') }});
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-         }
-         
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            font-family: 'Montserrat', sans-serif;
+            background: url({{ url_for('static', filename='lol.jpg') }}) no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
             padding: 0;
-            text-align: center;
+            color: white;
         }
-
+        
         .header {
-            background-color: #E50914;
+            background: linear-gradient(to bottom,rgba(0, 0, 0, 1) , rgba(0, 0, 0, 0));
             color: white;
             padding: 20px 0;
+            text-align: center;
         }
-
+        
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            text-align: left;
         }
-
-        .container h1 {
+        
+        h1 {
             color: #E50914;
         }
-
-
-        .container li {
+        
+        ol {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
             font-size: 18px;
             margin: 10px 0;
         }
-
-        .container form {
-            padding: 20px 0;
+        
+        form {
+            margin: 20px 0;
         }
-
-        .container form label {
+        
+        label {
             display: block;
-            text-align: left;
-            margin: 10px 0;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
-
-        .container form input[type="text"], 
-        .container form input[type="password"] {
+        
+        input[type="text"],
+        input[type="password"],
+        select {
             width: 100%;
             padding: 10px;
             margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 3px;
             box-sizing: border-box;
+            background-color: #f2f2f2; /* Grey background */
         }
-
-        .container form input[type="submit"] {
+        
+        input[type="submit"] {
             background-color: #E50914;
             color: white;
             border: none;
@@ -75,15 +73,20 @@
             border-radius: 3px;
             cursor: pointer;
         }
-
-        .container form input[type="submit"]:hover {
+        
+        input[type="submit"]:hover {
             background-color: #B20812;
         }
-
-        .container a {
+        
+        a {
             text-decoration: none;
             color: #E50914;
         }
+
+        .message{
+            font-size: 25px;
+        }
+
     </style>
 </head>
 <body>
@@ -92,21 +95,18 @@
     </div>
 
     <div class="container">
-        <div>{{msg}}</div>
+        <div class='message'><b>{{msg}}</b></div>
         <h1>MOVIE OPERATIONS</h1>
         <ol>
             <li>GET RECOMMENDATIONS</li>
-
             <li>ADD MOVIE TO WATCHLIST</li>
             <li>SHOW WATCHLIST</li>
             <li>RESUME MOVIE FROM WATCHLIST</li>
             <li>UPDATE MOVIE TIMESTAMP IN WATCHLIST</li>
             <li>RATE MOVIES</li>
-
             <li>ADD MOVIE TO WISHLIST</li>
             <li>SHOW WISHLIST</li>
             <li>DELETE MOVIE FROM WISHLIST</li>
-            
             <li>UPDATE PROFILE PASSWORD</li>
             <li>DELETE PROFILE</li>
             <li>LOGOUT PROFILE</li>
@@ -120,10 +120,14 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>GET MOVIE RECOMMENDATIONS</h1>
         <form method="POST" action="/profile_home">
             <input type="submit" value="Submit">
         </form>
+
+        <hr>
 
         <h1>ADD MOVIE TO WATCHLIST</h1>
         <form method="POST" action="/profile_home">
@@ -134,11 +138,15 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>SHOW WATCHLIST</h1>
         <form method="POST" action="/profile_home">
             <input type="hidden" name="watch" id="watch" value='99'>
             <input type="submit" value="Submit">
         </form>
+
+        <hr>
 
         <h1>RESUME MOVIE FROM WATCHLIST</h1>
         <form method="POST" action="/profile_home">
@@ -149,6 +157,8 @@
             <br>
             <input type="submit" value="Submit">
         </form>
+
+        <hr>
 
         <h1>UPDATE MOVIE TIMESTAMP IN WATCHLIST</h1>
         <form method="POST" action="/profile_home">
@@ -161,6 +171,8 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>RATE MOVIE IN WATCHLIST</h1>
         <form method="POST" action="/profile_home">
             <label for="mid">MOVIE_ID</label>
@@ -172,6 +184,8 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>ADD MOVIE TO WISHLIST</h1>
         <form method="POST" action="/profile_home">
             <input type="hidden" name="opno" id="opno" value="2">
@@ -181,11 +195,15 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>SHOW WISHLIST</h1>
         <form method="POST" action="/profile_home">
             <input type="hidden" name="wish" id="wish" value='99'>
             <input type="submit" value="Submit">
         </form>
+
+        <hr>
 
         <h1>DELETE MOVIE FROM WISHLIST</h1>
         <form method="POST" action="/profile_home">
@@ -196,6 +214,8 @@
             <br>
             <input type="submit" value="Submit">
         </form>
+
+        <hr>
 
         <h1>UPDATE PROFILE PASSWORD</h1>
         <form method="POST" action="/profile_home">
@@ -208,18 +228,22 @@
             <input type="submit" value="Submit">
         </form>
 
+        <hr>
+
         <h1>DELETE PROFILE</h1>
         <form method="POST" action="/profile_home">
             <input type="hidden" name="opno" id="opno" value="9">
-            <input type="submit" value="Submit">
+            <input type="submit" value="Delete">
         </form>
+
+        <hr>
 
         <h1>LOGOUT PROFILE</h1>
         <form method="POST" action="/profile_home">
             <input type="hidden" name="opno" id="opno" value="10">
-            <input type="submit" value="Submit">
+            <input type="submit" value="Logout">
         </form>
-        
+
     </div>
 </body>
 </html>
