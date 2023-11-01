@@ -50,22 +50,25 @@ class Account:
         return False
         
     def create_profile(self, profile_name, profile_password):
+        # Count of profiles 
         query1 = f'SELECT count(*) from profile WHERE account_id = {self.account_id};'
         self.db.execute_query(query1)
         cnt = self.db.fetch_one()
         
+        #Profile with same names
         query3 = f'SELECT count(*) from profile WHERE account_id = {self.account_id} and profile_name=\'{profile_name}\';'
         self.db.execute_query(query3)
         cnt2 = self.db.fetch_one()
         if(cnt2[0] !=0):
             print("PROFILE WITH SAME NAME EXISTS")
             return {'err': 0, 'msg': "PROFILE WITH SAME NAME EXISTS"}
-            
+        
         if (cnt is not None):
+            #COunt canot exceed 6
             if(cnt[0] >= 6):
                 print("CANNOT ADD MORE PROFILES")
                 return {'err': 0,'msg': "CANNOT ADD MORE PROFILES"}
-            else:        
+            else:  #create a profile       
                 query = f'INSERT INTO profile (account_id, profile_name, profile_password) VALUES ({self.account_id},\'{profile_name}\', \'{profile_password}\');'
                 self.db.execute_query(query)
                 self.db.commit()
@@ -79,7 +82,7 @@ class Account:
             return {'err': 1,'msg': f'Profile Created for {profile_name}! YOU CAN LOGIN NOW'}
           
     def login_profile(self, profile_name, profile_password):
-        
+        #validating subscription
         query = f'SELECT * from billing WHERE account_id = {self.account_id} AND expiration_date > DATE(NOW());'
         self.db.execute_query(query)
         resz = self.db.fetch_one()
@@ -89,7 +92,7 @@ class Account:
             self._active_sub = False
 
         if (self._active_sub):
-            
+            # Number of devices allowed 
             tier_id = resz[3]
             query2 = f'SELECT * from subscription_tiers WHERE tier_id = {tier_id};'
             self.db.execute_query(query2)
@@ -101,7 +104,7 @@ class Account:
         if(self.redisdb.get_num_devices(self.account_id) >= self._get_devices):
             return {'err': 0, 'msg': "Exceeded number of devices"}
         
-        if(self.profile_id):
+        if(self.profile_id):#Already single profile logged in 
             return {'err': 0, 'msg': "Logout from previous profile"}
         
         query1 = f'SELECT count(*) FROM SESSION where account_id={self.account_id} ;'
@@ -379,6 +382,7 @@ class Account:
                 self.db.execute_query(query4)
                 
             else:
+                #creating revenue for first time 
                 query3 = f'INSERT INTO REVENUE (MONTH, year, revenue) VALUES (\'{datetime.now().strftime("%b")}\', {datetime.now().strftime("%Y")}, {x[2]});'
                 self.db.execute_query(query3)
 
@@ -560,98 +564,98 @@ def logout(account: Account):
     account.logout()
     # del account
         
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    signup("tanishq.trivedi27@gmail.com", "123456")
-    signup("vivekpillai@gmail.com", "12345")
+#     signup("tanishq.trivedi27@gmail.com", "123456")
+#     signup("vivekpillai@gmail.com", "12345")
     
-    account1 = login("tanishq.trivedi27@gmail.com", "123456")
-    account2 = login("vivekpillai@gmail.com", "12345")
-    account3 = login("vivekpillai@gmail.com", "12345")
-    account4 = login("vivekpillai@gmail.com", "12345")
+#     account1 = login("tanishq.trivedi27@gmail.com", "123456")
+#     account2 = login("vivekpillai@gmail.com", "12345")
+#     account3 = login("vivekpillai@gmail.com", "12345")
+#     account4 = login("vivekpillai@gmail.com", "12345")
     
-    # Add a movie to the watchlist
-    if (account1 is not None):
+#     # Add a movie to the watchlist
+#     if (account1 is not None):
         
-        # account1.payment_subscription('Standard','UPI')
+#         # account1.payment_subscription('Standard','UPI')
         
-        account1.create_profile("tanishq", "1111")
-        account1.login_profile("tanishq", "1111")
+#         account1.create_profile("tanishq", "1111")
+#         account1.login_profile("tanishq", "1111")
 
-        account2.payment_subscription('Standard','Cash')
-        # account1.logout_profile()
-        account2.create_profile("pillai", "1111")
-        account2.login_profile("pillai", "1111")
+#         account2.payment_subscription('Standard','Cash')
+#         # account1.logout_profile()
+#         account2.create_profile("pillai", "1111")
+#         account2.login_profile("pillai", "1111")
         
-        # # account2.delete_account_profile()
+#         # # account2.delete_account_profile()
         
-        account3.create_profile("muskan", "1111")
-        account3.login_profile("muskan", "1111")
+#         account3.create_profile("muskan", "1111")
+#         account3.login_profile("muskan", "1111")
         
-        account4.create_profile("gauri", "1111")
-        account4.login_profile("gauri", "1111")
+#         account4.create_profile("gauri", "1111")
+#         account4.login_profile("gauri", "1111")
         
-        # account5 = login("tanishq.trivedi27@gmail.com", "123456")
+#         # account5 = login("tanishq.trivedi27@gmail.com", "123456")
         
-        # account5.create_profile("mokshita", "1111")
-        # account5.login_profile("mokshita", "1111")
+#         # account5.create_profile("mokshita", "1111")
+#         # account5.login_profile("mokshita", "1111")
         
-        # account6 = login("tanishq.trivedi27@gmail.com", "123456")
+#         # account6 = login("tanishq.trivedi27@gmail.com", "123456")
         
-        # account6.create_profile("manasvi", "1111")
-        # account6.login_profile("manasvi", "1111")
-        # account3.login_profile("pillai","lol")
+#         # account6.create_profile("manasvi", "1111")
+#         # account6.login_profile("manasvi", "1111")
+#         # account3.login_profile("pillai","lol")
         
-        account1.update_movie_timestamp(2,"1:23:35")
-        account1.update_movie_timestamp(10,"1:23:35")
+#         account1.update_movie_timestamp(2,"1:23:35")
+#         account1.update_movie_timestamp(10,"1:23:35")
         
-        # account1.update_account_password("Kushal","123456")
+#         # account1.update_account_password("Kushal","123456")
         
         
-        account1.add_movie_to_watchlist(19)
-        account1.add_movie_to_watchlist(20)
+#         account1.add_movie_to_watchlist(19)
+#         account1.add_movie_to_watchlist(20)
         
-        account1.update_movie_timestamp(19,"1:30:56")
+#         account1.update_movie_timestamp(19,"1:30:56")
         
-        account1.resume_movie(25)
-        account1.resume_movie(19)
+#         account1.resume_movie(25)
+#         account1.resume_movie(19)
         
-        account1.rate_movie(20,"I like this")
-        account1.rate_movie(29,"Not for me")
-        # account2.add_movie_to_watchlist(13)
-        # account2.add_movie_to_watchlist(3)
-        # print(account1.get_user_recommendation())
-        # print(account2.get_user_recommendation())
-        # account2.update_profile_password("lol","lol")
+#         account1.rate_movie(20,"I like this")
+#         account1.rate_movie(29,"Not for me")
+#         # account2.add_movie_to_watchlist(13)
+#         # account2.add_movie_to_watchlist(3)
+#         # print(account1.get_user_recommendation())
+#         # print(account2.get_user_recommendation())
+#         # account2.update_profile_password("lol","lol")
         
-        # account1.add_movie_to_wishlist(4)
-        # account1.add_movie_to_wishlist(3)
-        # account1.add_movie_to_wishlist(4)
-        # account1.delete_movie_from_wishlist(4)
-        # account1.delete_movie_from_wishlist(5)
+#         # account1.add_movie_to_wishlist(4)
+#         # account1.add_movie_to_wishlist(3)
+#         # account1.add_movie_to_wishlist(4)
+#         # account1.delete_movie_from_wishlist(4)
+#         # account1.delete_movie_from_wishlist(5)
 
-        account1.logout_profile()    
+#         account1.logout_profile()    
               
 
         
         
-        account2.logout_profile()
+#         account2.logout_profile()
         
-        account3.logout_profile()    
+#         account3.logout_profile()    
         
         
         
-        account4.logout_profile() 
-        # # account6.logout_profile() 
-        # # account1.delete_account()
-        # account1.create_profile("avni", "6969")
-        # account1.login_profile("avni", "6969")
-        logout(account1)
-        logout(account2)
+#         account4.logout_profile() 
+#         # # account6.logout_profile() 
+#         # # account1.delete_account()
+#         # account1.create_profile("avni", "6969")
+#         # account1.login_profile("avni", "6969")
+#         logout(account1)
+#         logout(account2)
         
-        logout(account3)
+#         logout(account3)
         
-        logout(account4)
-        # logout(account5)
-        # logout(account6)
+#         logout(account4)
+#         # logout(account5)
+#         # logout(account6)
         

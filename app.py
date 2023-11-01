@@ -44,6 +44,7 @@ def account_home():
             password = request.form['password']
             session['email'] = email
             session['password'] = password
+            print('Login inside')
             
             acc_name = f'account_{i}'
             temp_account = login(email,password)
